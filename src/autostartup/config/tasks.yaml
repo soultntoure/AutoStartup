@@ -1,0 +1,16 @@
+# src/autostartup/config/tasks.yaml
+competitive_analysis_task:
+  description: >
+    Analyze the provided startup idea: '{idea}'.
+    Your primary goal is to conduct a detailed competitive analysis.
+    Identify the top 3-5 direct and indirect competitors.
+    For each competitor, provide a brief summary of their product, 
+    their main strengths, and weaknesses.
+
+    Your final output must be a concise report summarizing the 
+    competitive landscape.
+  expected_output: >
+    A report with a section for each competitor, including their
+    summary, strengths, and weaknesses.
+  agent: market_analyst  
+  output_file: 'reports/competitive_analysis.md'
