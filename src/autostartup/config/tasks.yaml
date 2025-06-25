@@ -1,4 +1,22 @@
 # src/autostartup/config/tasks.yaml
+classify_idea_task:
+  description: >
+    Analyze the following startup idea: '{idea}'.
+    Based on the description, classify it into ONE of the following three 
+    categories and provide a confidence score:
+    - 'software': If the idea is a web application, mobile app, SaaS, or any other code-based product.
+    - 'strategic': If the idea is a service, business model innovation, consulting, or physical product.
+    - 'vague': If the idea is unclear, ambiguous, or lacks enough detail to be classified.
+    
+    Provide your response as a JSON object with:
+    - classification: one of the three categories above
+    - confidence: a score between 0.0 and 1.0 indicating your certainty
+    - reasoning: a brief explanation for your classification
+  expected_output: >
+    A JSON object with classification, confidence score, and reasoning.
+  agent: orchestrator  
+  output_file: 'outputs/idea_classification.md'
+
 competitive_analysis_task:
   description: >
     Analyze the provided startup idea: '{idea}'.
@@ -13,4 +31,41 @@ competitive_analysis_task:
     A report with a section for each competitor, including their
     summary, strengths, and weaknesses.
   agent: market_analyst  
-  output_file: 'reports/competitive_analysis.md'
+  context:
+    - classify_idea_task
+  output_file: 'outputs/competitive_analysis.md'
+
+propose_mvp_architecture_task:
+  description: >
+    Based on the startup idea: '{idea}' and the competitive analysis,
+    design a detailed technical architecture for the Minimum Viable Product (MVP).
+
+    Your plan MUST include:
+    1.  A recommended tech stack (e.g., Frontend: React, Backend: Node.js/Express, Database: PostgreSQL).
+    2.  A detailed, hierarchical folder structure for the code repository.
+    3.  A complete, well-written README.md file content in Markdown format.
+
+    The README should include a project title, a brief description, the tech
+    stack you chose, and setup instructions.
+  expected_output: >
+    A string containing a detailed technical plan, including the chosen tech stack, 
+    the complete folder structure, and the full content for the README.md file.
+  agent: mvp_architect
+  context:
+    - competitive_analysis_task
+
+scaffold_github_repo_task:
+  description: >
+    Use the provided technical architecture plan to create a new GitHub repository.
+    The repository name should be a catchy, URL-safe version of the startup idea: '{idea}'.
+    
+    You MUST perform the following actions using your tools:
+    1.  Create a new public GitHub repository with the generated name.
+    2.  Use the folder structure from the plan to create all necessary directories.
+    3.  Create the README.md file in the root of the repository with the content from the plan.
+  expected_output: >
+    The URL of the newly created GitHub repository.
+  agent: mvp_architect
+  output_file: 'reports/github_repository.md'
+  context:
+    - propose_mvp_architecture_task
