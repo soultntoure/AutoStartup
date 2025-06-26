@@ -129,12 +129,10 @@ extract_scaffolding_plan_task:
 scaffold_github_repo_task:
   description: >
     Your only job is to execute the GitHub Repository Scaffolder tool.
-    Take the complete JSON object from the context of the previous step.
-    You MUST pass the 'repo_name', 'description', and 'files' values from the
-    JSON object directly to the corresponding arguments of the tool. Do not modify them.
+    The context from the previous step is a complete JSON object.
+    You MUST pass this entire JSON object, unmodified, as the arguments to the tool.
   expected_output: >
     The full URL of the successfully created and populated GitHub repository.
   agent: mvp_architect
-  output_file: 'outputs/github_repository.md'
   context:
     - extract_scaffolding_plan_task
