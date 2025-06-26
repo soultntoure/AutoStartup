@@ -134,5 +134,6 @@ scaffold_github_repo_task:
   expected_output: >
     The full URL of the successfully created and populated GitHub repository.
   agent: mvp_architect
+  output_file: 'outputs/github_repo_url.md'
   context:
     - extract_scaffolding_plan_task

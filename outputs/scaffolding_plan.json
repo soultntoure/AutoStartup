@@ -1,1 +1,142 @@
-✅ Successfully created and populated repository: https://github.com/soultntoure/mindbloom-ai-journal
+{
+  "repo_name": "campus-gigs",
+  "description": "A mobile application for matching university students with part-time gigs near campus.",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "content": "name: CI\n\non:\n  push:\n    branches: [ main ]\n  pull_request:\n    branches: [ main ]\n\njobs:\n  build-and-test:\n    runs-on: ubuntu-latest\n\n    strategy:\n      matrix:\n        node-version: [18.x]\n\n    steps:\n    - uses: actions/checkout@v3\n\n    - name: Use Node.js ${{ matrix.node-version }}\n      uses: actions/setup-node@v3\n      with:\n        node-version: ${{ matrix.node-version }}\n\n    - name: Install pnpm\n      uses: pnpm/action-setup@v2\n      with:\n        version: 8\n\n    - name: Install dependencies\n      run: pnpm install\n\n    - name: Lint\n      run: pnpm lint\n\n    - name: Build all workspaces\n      run: pnpm build\n\n    - name: Run tests\n      run: pnpm test\n"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "content": "## Description\n\n_Please provide a clear and concise description of the pull request._\n\n---\n\n## Changes Made\n\n- _Detail the changes you made._\n- _Use bullet points for clarity._\n\n---\n\n## How to Test\n\n1.  _Step-by-step instructions on how to test the changes._\n2.  _Include any necessary setup or configuration._\n\n---\n\n## Related Issues\n\n- _Closes #issue_number_"
+    },
+    {
+      "path": "apps/mobile/app/(tabs)/_layout.tsx",
+      "content": "import React from 'react';\nimport { Tabs } from 'expo-router';\nimport { Ionicons } from '@expo/vector-icons';\n\nexport default function TabLayout() {\n  return (\n    <Tabs\n      screenOptions={({ route }) => ({\n        tabBarIcon: ({ focused, color, size }) => {\n          let iconName: React.ComponentProps<typeof Ionicons>['name'] = 'alert-circle';\n\n          if (route.name === 'index') {\n            iconName = focused ? 'list' : 'list-outline';\n          } else if (route.name === 'map') {\n            iconName = focused ? 'map' : 'map-outline';\n          } else if (route.name === 'profile') {\n            iconName = focused ? 'person-circle' : 'person-circle-outline';\n          }\n\n          return <Ionicons name={iconName} size={size} color={color} />;\n        },\n        tabBarActiveTintColor: 'blue',\n        tabBarInactiveTintColor: 'gray',\n      })}\n    >\n      <Tabs.Screen name=\"index\" options={{ title: 'Gig Feed' }} />\n      <Tabs.Screen name=\"map\" options={{ title: 'Map View' }} />\n      <Tabs.Screen name=\"profile\" options={{ title: 'Profile' }} />\n    </Tabs>\n  );\n}\n"
+    },
+    {
+      "path": "apps/mobile/app/(tabs)/index.tsx",
+      "content": "import React from 'react';\nimport { View, Text, StyleSheet } from 'react-native';\n\nexport default function GigFeedScreen() {\n  return (\n    <View style={styles.container}>\n      <Text style={styles.title}>Gig Feed</Text>\n      <Text>List of available gigs will appear here.</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    justifyContent: 'center',\n    alignItems: 'center',\n  },\n  title: {\n    fontSize: 24,\n    fontWeight: 'bold',\n    marginBottom: 16,\n  },\n});\n"
+    },
+    {
+      "path": "apps/mobile/app/(tabs)/map.tsx",
+      "content": "import React from 'react';\nimport { View, Text, StyleSheet } from 'react-native';\n\nexport default function MapViewScreen() {\n  return (\n    <View style={styles.container}>\n      <Text style={styles.title}>Map View</Text>\n      <Text>A map of available gigs will appear here.</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    justifyContent: 'center',\n    alignItems: 'center',\n  },\n  title: {\n    fontSize: 24,\n    fontWeight: 'bold',\n    marginBottom: 16,\n  },\n});\n"
+    },
+    {
+      "path": "apps/mobile/app/(tabs)/profile.tsx",
+      "content": "import React from 'react';\nimport { View, Text, StyleSheet } from 'react-native';\n\nexport default function ProfileScreen() {\n  return (\n    <View style={styles.container}>\n      <Text style={styles.title}>User Profile</Text>\n      <Text>User profile information will appear here.</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    justifyContent: 'center',\n    alignItems: 'center',\n  },\n  title: {\n    fontSize: 24,\n    fontWeight: 'bold',\n    marginBottom: 16,\n  },\n});\n"
+    },
+    {
+      "path": "apps/mobile/app/_layout.tsx",
+      "content": "import { Stack } from 'expo-router';\n\nexport default function RootLayout() {\n  return (\n    <Stack>\n      <Stack.Screen name=\"(tabs)\" options={{ headerShown: false }} />\n    </Stack>\n  );\n}\n"
+    },
+    {
+      "path": "apps/mobile/services/api.ts",
+      "content": "import axios from 'axios';\n\n// Use the IP address of your machine for Android emulator\n// or 'localhost' for iOS simulator\nconst API_URL = 'http://localhost:3001/api'; // Adjust if necessary\n\nconst apiClient = axios.create({\n  baseURL: API_URL,\n  headers: {\n    'Content-Type': 'application/json',\n  },\n});\n\n// You can add interceptors for handling auth tokens here\napiClient.interceptors.request.use(async (config) => {\n  // e.g., const token = await AsyncStorage.getItem('token');\n  // if (token) {\n  //   config.headers.Authorization = `Bearer ${token}`;\n  // }\n  return config;\n});\n\nexport default apiClient;\n"
+    },
+    {
+      "path": "apps/mobile/app.json",
+      "content": "{\n  \"expo\": {\n    \"name\": \"campus-gigs-mobile\",\n    \"slug\": \"campus-gigs-mobile\",\n    \"version\": \"1.0.0\",\n    \"orientation\": \"portrait\",\n    \"icon\": \"./assets/icon.png\",\n    \"scheme\": \"myapp\",\n    \"userInterfaceStyle\": \"light\",\n    \"splash\": {\n      \"image\": \"./assets/splash.png\",\n      \"resizeMode\": \"contain\",\n      \"backgroundColor\": \"#ffffff\"\n    },\n    \"ios\": {\n      \"supportsTablet\": true\n    },\n    \"android\": {\n      \"adaptiveIcon\": {\n        \"foregroundImage\": \"./assets/adaptive-icon.png\",\n        \"backgroundColor\": \"#ffffff\"\n      }\n    },\n    \"web\": {\n      \"bundler\": \"metro\",\n      \"output\": \"static\",\n      \"favicon\": \"./assets/favicon.png\"\n    },\n    \"plugins\": [\n      \"expo-router\"\n    ],\n    \"experiments\": {\n      \"typedRoutes\": true\n    }\n  }\n}\n"
+    },
+    {
+      "path": "apps/mobile/package.json",
+      "content": "{\n  \"name\": \"mobile\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"main\": \"expo-router/entry\",\n  \"scripts\": {\n    \"start\": \"expo start\",\n    \"android\": \"expo start --android\",\n    \"ios\": \"expo start --ios\",\n    \"web\": \"expo start --web\"\n  },\n  \"dependencies\": {\n    \"@expo/vector-icons\": \"^13.0.0\",\n    \"axios\": \"^1.5.1\",\n    \"expo\": \"~49.0.13\",\n    \"expo-constants\": \"~14.4.2\",\n    \"expo-linking\": \"~5.0.2\",\n    \"expo-router\": \"^2.0.0\",\n    \"expo-splash-screen\": \"~0.20.5\",\n    \"expo-status-bar\": \"~1.6.0\",\n    \"react\": \"18.2.0\",\n    \"react-dom\": \"18.2.0\",\n    \"react-native\": \"0.72.6\",\n    \"react-native-gesture-handler\": \"~2.12.0\",\n    \"react-native-safe-area-context\": \"4.6.3\",\n    \"react-native-screens\": \"~3.22.0\",\n    \"react-native-web\": \"~0.19.6\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"^7.20.0\",\n    \"@types/react\": \"~18.2.14\",\n    \"typescript\": \"^5.1.3\"\n  }\n}\n"
+    },
+    {
+      "path": "apps/mobile/tsconfig.json",
+      "content": "{\n  \"extends\": \"expo/tsconfig.base\",\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"paths\": {\n      \"@/*\": [\n        \"./*\"\n      ]\n    }\n  },\n  \"include\": [\n    \"**/*.ts\",\n    \"**/*.tsx\",\n    \".expo/react-native-action-sheet.js\"\n  ]\n}\n"
+    },
+    {
+      "path": "apps/server/prisma/schema.prisma",
+      "content": "generator client {\n  provider = \"prisma-client-js\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        Int      @id @default(autoincrement())\n  email     String   @unique\n  password  String\n  name      String?\n  role      Role     @default(STUDENT)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  gigsPosted Gig[]\n  applications Application[]\n}\n\nmodel Gig {\n  id          Int      @id @default(autoincrement())\n  title       String\n  description String\n  location    String\n  pay         Float\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  postedById  Int\n  postedBy    User     @relation(fields: [postedById], references: [id])\n  applications Application[]\n}\n\nmodel Application {\n  id        Int      @id @default(autoincrement())\n  status    String   @default(\"PENDING\") // PENDING, ACCEPTED, REJECTED\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  gigId     Int\n  gig       Gig      @relation(fields: [gigId], references: [id])\n\n  applicantId Int\n  applicant   User     @relation(fields: [applicantId], references: [id])\n\n  @@unique([gigId, applicantId])\n}\n\nenum Role {\n  STUDENT\n  BUSINESS\n}\n"
+    },
+    {
+      "path": "apps/server/src/auth/auth.module.ts",
+      "content": "import { Module } from '@nestjs/common';\nimport { JwtModule } from '@nestjs/jwt';\nimport { PassportModule } from '@nestjs/passport';\nimport { UsersModule } from '../users/users.module';\n// import { AuthService } from './auth.service';\n// import { AuthController } from './auth.controller';\n// import { JwtStrategy } from './jwt.strategy';\n\n@Module({\n  imports: [\n    UsersModule,\n    PassportModule,\n    JwtModule.register({\n      secret: process.env.JWT_SECRET,\n      signOptions: { expiresIn: '60m' },\n    }),\n  ],\n  // providers: [AuthService, JwtStrategy],\n  // controllers: [AuthController],\n}) \nexport class AuthModule {}\n"
+    },
+    {
+      "path": "apps/server/src/gigs/gigs.module.ts",
+      "content": "import { Module } from '@nestjs/common';\n// import { GigsService } from './gigs.service';\n// import { GigsController } from './gigs.controller';\n\n@Module({\n  // controllers: [GigsController],\n  // providers: [GigsService]\n})\nexport class GigsModule {}\n"
+    },
+    {
+      "path": "apps/server/src/users/users.module.ts",
+      "content": "import { Module } from '@nestjs/common';\n// import { UsersService } from './users.service';\n// import { UsersController } from './users.controller';\n\n@Module({\n  // controllers: [UsersController],\n  // providers: [UsersService],\n  // exports: [UsersService] // Export if needed by other modules like AuthModule\n})\nexport class UsersModule {}\n"
+    },
+    {
+      "path": "apps/server/src/app.controller.ts",
+      "content": "import { Controller, Get } from '@nestjs/common';\n\n@Controller()\nexport class AppController {\n  @Get()\n  getHello(): string {\n    return 'Hello World!';\n  }\n}\n"
+    },
+    {
+      "path": "apps/server/src/app.module.ts",
+      "content": "import { Module } from '@nestjs/common';\nimport { AppController } from './app.controller';\nimport { AuthModule } from './auth/auth.module';\nimport { UsersModule } from './users/users.module';\nimport { GigsModule } from './gigs/gigs.module';\nimport { PrismaModule } from './prisma/prisma.module';\nimport { ConfigModule } from '@nestjs/config';\n\n@Module({\n  imports: [\n    ConfigModule.forRoot({ isGlobal: true }),\n    AuthModule,\n    UsersModule,\n    GigsModule,\n    PrismaModule,\n  ],\n  controllers: [AppController],\n})\nexport class AppModule {}\n"
+    },
+    {
+      "path": "apps/server/src/main.ts",
+      "content": "import { NestFactory } from '@nestjs/core';\nimport { AppModule } from './app.module';\n\nasync function bootstrap() {\n  const app = await NestFactory.create(AppModule);\n  app.setGlobalPrefix('api');\n  await app.listen(process.env.PORT || 3001);\n}\nbootstrap();\n"
+    },
+    {
+      "path": "apps/server/Dockerfile",
+      "content": "# Install dependencies\nFROM node:18-alpine AS deps\nWORKDIR /usr/src/app\nCOPY package.json pnpm-lock.yaml* ./ \nRUN npm install -g pnpm\nCOPY prisma ./prisma/\nRUN pnpm install --frozen-lockfile --prod\n\n# Build the app\nFROM node:18-alpine AS builder\nWORKDIR /usr/src/app\nCOPY --from=deps /usr/src/app/node_modules ./node_modules\nCOPY . .\nRUN npm install -g pnpm\nRUN pnpm build\n\n# Final image\nFROM node:18-alpine AS final\nWORKDIR /usr/src/app\nENV NODE_ENV=production\nCOPY --from=builder /usr/src/app/dist ./dist\nCOPY --from=deps /usr/src/app/node_modules ./node_modules\nCOPY --from=deps /usr/src/app/prisma ./prisma\nEXPOSE 3001\nCMD [\"node\", \"dist/main\"]\n"
+    },
+    {
+      "path": "apps/server/package.json",
+      "content": "{\n  \"name\": \"server\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"build\": \"nest build\",\n    \"start:dev\": \"nest start --watch\",\n    \"start:prod\": \"node dist/main\",\n    \"lint\": \"eslint \\\"{src,apps,libs,test}/**/*.ts\\\" --fix\",\n    \"test\": \"jest\"\n  },\n  \"dependencies\": {\n    \"@nestjs/common\": \"^10.0.0\",\n    \"@nestjs/core\": \"^10.0.0\",\n    \"@nestjs/platform-express\": \"^10.0.0\",\n    \"@nestjs/config\": \"^3.1.1\",\n    \"@nestjs/jwt\": \"^10.1.1\",\n    \"@nestjs/passport\": \"^10.0.2\",\n    \"@prisma/client\": \"^5.5.2\",\n    \"passport\": \"^0.6.0\",\n    \"passport-jwt\": \"^4.0.1\",\n    \"reflect-metadata\": \"^0.1.13\",\n    \"rxjs\": \"^7.8.1\"\n  },\n  \"devDependencies\": {\n    \"@nestjs/cli\": \"^10.0.0\",\n    \"@nestjs/schematics\": \"^10.0.0\",\n    \"@types/express\": \"^4.17.17\",\n    \"@types/node\": \"^20.3.1\",\n    \"@types/passport-jwt\": \"^3.0.13\",\n    \"prisma\": \"^5.5.2\",\n    \"ts-loader\": \"^9.4.3\",\n    \"tsconfig-paths\": \"^4.2.0\",\n    \"typescript\": \"^5.1.3\"\n  }\n}\n"
+    },
+    {
+      "path": "apps/server/tsconfig.json",
+      "content": "{\n  \"compilerOptions\": {\n    \"module\": \"commonjs\",\n    \"declaration\": true,\n    \"removeComments\": true,\n    \"emitDecoratorMetadata\": true,\n    \"experimentalDecorators\": true,\n    \"allowSyntheticDefaultImports\": true,\n    \"target\": \"ES2021\",\n    \"sourceMap\": true,\n    \"outDir\": \"./dist\",\n    \"baseUrl\": \"./\",\n    \"incremental\": true,\n    \"skipLibCheck\": true,\n    \"strictNullChecks\": false,\n    \"noImplicitAny\": false,\n    \"strictBindCallApply\": false,\n    \"forceConsistentCasingInFileNames\": false,\n    \"noFallthroughCasesInSwitch\": false\n  }\n}\n"
+    },
+    {
+      "path": "apps/server/test/app.e2e-spec.ts",
+      "content": "import { Test, TestingModule } from '@nestjs/testing';\nimport { INestApplication } from '@nestjs/common';\nimport * as request from 'supertest';\nimport { AppModule } from './../src/app.module';\n\ndescribe('AppController (e2e)', () => {\n  let app: INestApplication;\n\n  beforeEach(async () => {\n    const moduleFixture: TestingModule = await Test.createTestingModule({\n      imports: [AppModule],\n    }).compile();\n\n    app = moduleFixture.createNestApplication();\n    await app.init();\n  });\n\n  it('/ (GET)', () => {\n    return request(app.getHttpServer())\n      .get('/')\n      .expect(200)\n      .expect('Hello World!');\n  });\n});\n"
+    },
+    {
+      "path": "packages/types/src/index.ts",
+      "content": "export * from './user';\nexport * from './gig';\n"
+    },
+    {
+      "path": "packages/types/src/gig.ts",
+      "content": "export interface Gig {\n  id: number;\n  title: string;\n  description: string;\n  location: string;\n  pay: number;\n  postedById: number;\n  createdAt: Date;\n  updatedAt: Date;\n}\n"
+    },
+    {
+      "path": "packages/types/src/user.ts",
+      "content": "export enum UserRole {\n  STUDENT = 'STUDENT',\n  BUSINESS = 'BUSINESS',\n}\n\nexport interface User {\n  id: number;\n  email: string;\n  name?: string | null;\n  role: UserRole;\n  createdAt: Date;\n  updatedAt: Date;\n}\n"
+    },
+    {
+      "path": "packages/types/package.json",
+      "content": "{\n  \"name\": \"@campus-gigs/types\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"main\": \"src/index.ts\",\n  \"types\": \"src/index.ts\"\n}\n"
+    },
+    {
+      "path": ".dockerignore",
+      "content": "node_modules\n/dist\n.env\nnpm-debug.log\nDockerfile\n.dockerignore"
+    },
+    {
+      "path": ".editorconfig",
+      "content": "root = true\n\n[*]\nindent_style = space\nindent_size = 2\nend_of_line = lf\ncharset = utf-8\ntrim_trailing_whitespace = true\ninsert_final_newline = true\n"
+    },
+    {
+      "path": ".env.example",
+      "content": "# PostgreSQL Database\nDATABASE_URL=\"postgresql://user:password@localhost:5432/campusgigs?schema=public\"\n\n# JWT Secret\nJWT_SECRET=\"yoursecretjwtkey\"\n\n# Server Port\nPORT=3001\n"
+    },
+    {
+      "path": ".gitignore",
+      "content": "# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.\n\n# dependencies\n/node_modules\n/.pnp\n.pnp.js\n\n# testing\n/coverage\n\n# production\n/build\n/dist\n.next\n\n# misc\n.DS_Store\n*.pem\n\n# debug\nnpm-debug.log*\nyarn-debug.log*\nyarn-error.log*\n\n# local env files\n.env\n.env.local\n.env.development.local\n.env.test.local\n.env.production.local\n\n# vercel\n.vercel\n\n# expo\n.expo/\n*.jks\n*.p8\n*.p12\n*.key\n*.mobileprovision\n"
+    },
+    {
+      "path": "docker-compose.yml",
+      "content": "version: '3.8'\nservices:\n  server:\n    build:\n      context: ./apps/server\n      dockerfile: Dockerfile\n    ports:\n      - \"3001:3001\"\n    env_file:\n      - .env\n    depends_on:\n      - db\n    volumes:\n      - ./apps/server/src:/usr/src/app/src # Mount for hot-reloading\n\n  db:\n    image: postgres:15-alpine\n    ports:\n      - \"5432:5432\"\n    environment:\n      POSTGRES_USER: user\n      POSTGRES_PASSWORD: password\n      POSTGRES_DB: campusgigs\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n\nvolumes:\n  postgres_data:\n"
+    },
+    {
+      "path": "package.json",
+      "content": "{\n  \"name\": \"campus-gigs-monorepo\",\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"pnpm --parallel --stream -r dev\",\n    \"build\": \"pnpm --filter \\\"./apps/**\\\" build\",\n    \"lint\": \"pnpm --parallel --stream -r lint\",\n    \"test\": \"pnpm --parallel --stream -r test\",\n    \"db:migrate\": \"pnpm --filter server prisma migrate dev\",\n    \"db:studio\": \"pnpm --filter server prisma studio\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.1.3\",\n    \"eslint\": \"^8.52.0\"\n  },\n  \"packageManager\": \"pnpm@8.6.0\"\n}\n"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "content": "packages:\n  - 'apps/*'\n  - 'packages/*'\n"
+    },
+    {
+      "path": "README.md",
+      "content": "# Campus Gigs\n\n**Connecting university students with part-time gigs near campus.**\n\nCampus Gigs is a mobile application designed to bridge the gap between students seeking flexible, local work and businesses looking for temporary, on-demand help.\n\n## ✨ Features (MVP)\n\n*   **Student Accounts:** Simple email/password signup and profile creation.\n*   **Business Accounts:** Post and manage part-time job listings (gigs).\n*   **Gig Feed:** Students can browse a real-time feed of available gigs, sorted by proximity and posting date.\n*   **Map View:** Visualize available gigs on a map centered around the university campus.\n*   **Simple Applications:** Students can apply to gigs with a single tap.\n*   **Application Tracking:** Businesses can view and manage applications for their gigs.\n\n## 🚀 Tech Stack\n\nThis project is a TypeScript monorepo managed with `pnpm` workspaces.\n\n*   **Monorepo:** [pnpm Workspaces](https://pnpm.io/workspaces)\n*   **Mobile App:** [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)\n    *   **Routing:** Expo Router\n    *   **UI:** Native components, potentially with a simple component library.\n*   **Backend:** [NestJS](https://nestjs.com/) (Node.js framework)\n*   **Database:** [PostgreSQL](https://www.postgresql.org/)\n*   **ORM:** [Prisma](https://www.prisma.io/)\n*   **Authentication:** JWT with [Passport.js](http://www.passportjs.org/)\n*   **Containerization:** [Docker](https://www.docker.com/)\n\n---\n\n## 🛠️ Getting Started\n\n### Prerequisites\n\n*   [Node.js](https://nodejs.org/en/) (v18 or later)\n*   [pnpm](https://pnpm.io/installation)\n*   [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose\n*   [Expo Go](https://expo.dev/go) app on your mobile device (iOS or Android) or a simulator.\n\n### 1. Clone the Repository\n\n```bash\ngit clone https://github.com/your-username/campus-gigs.git\ncd campus-gigs\n```\n\n### 2. Install Dependencies\n\nInstall all dependencies for all workspaces from the root directory.\n\n```bash\npnpm install\n```\n\n### 3. Setup Environment Variables\n\nThe backend server and database require environment variables to run.\n\nFirst, create a `.env` file in the root of the project by copying the example:\n\n```bash\ncp .env.example .env\n```\n\nNow, open `.env` and fill in the required values. The default values are configured to work with the `docker-compose.yml` setup. You should set a secure `JWT_SECRET`.\n\n### 4. Start the Development Environment\n\nThis command will use Docker Compose to spin up the PostgreSQL database and the NestJS backend server with hot-reloading.\n\n```bash\ndocker-compose up --build\n```\n\nYou can verify the server is running by navigating to `http://localhost:3001` in your browser. You should see \"Hello World!\".\n\n### 5. Run the Mobile App\n\nIn a separate terminal, navigate to the mobile app directory and start the Expo development server.\n\n```bash\ncd apps/mobile\npnpm start\n```\n\nThis will open a Metro Bundler interface in your terminal. You can now:\n*   Scan the QR code with the Expo Go app on your phone.\n*   Press `i` to run on an iOS Simulator.\n*   Press `a` to run on an Android Emulator.\n\nThe mobile app is configured to connect to the backend server running on `localhost:3001`.\n"
+    }
+  ]
+}

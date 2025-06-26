@@ -1,194 +1,186 @@
-### **Technical Architecture & Project Plan: Mindbloom AI**
+### **MVP Technical Architecture: Campus Gigs**
 
-Here is the detailed technical plan for the "Mindbloom AI" gamified journaling app MVP.
+Here is the detailed technical blueprint for the "Campus Gigs" mobile application MVP.
 
-### 1. Recommended Tech Stack
+---
 
-The architecture is designed around a modern, scalable, and type-safe monorepo structure, enabling efficient development for both the mobile app and the backend.
+### **1. Recommended Tech Stack**
 
-*   **Monorepo Management:**
-    *   **npm Workspaces:** To manage dependencies and run scripts across the frontend and backend from a single root.
+The architecture is designed as a TypeScript monorepo to maximize code sharing and streamline development between the mobile app and backend.
 
-*   **Mobile App (Client - `packages/app`):**
-    *   **Framework:** React Native will be used to build a cross-platform application for iOS and Android from a single codebase.
-    *   **Language:** TypeScript for static typing, improving code quality and maintainability.
-    *   **State Management:** Zustand for simple, fast, and scalable global state management.
-    *   **Routing:** React Navigation for handling navigation and screen transitions.
-    *   **API Communication:** Axios for making HTTP requests to the backend server.
+*   **Monorepo Management:** **pnpm Workspaces** - Efficiently manages dependencies across multiple projects.
+*   **Mobile Application (Frontend):**
+    *   **Framework:** **React Native** with **Expo** - Allows for rapid development and deployment to both iOS and Android from a single codebase. Expo provides a robust ecosystem of tools and pre-built modules.
+    *   **Routing:** **Expo Router** - A file-based routing system that simplifies navigation and deep linking.
+    *   **State Management:** React Context API (for MVP), Zustand (for scalability).
+*   **Backend:**
+    *   **Framework:** **NestJS** - A progressive Node.js framework using TypeScript, built on top of Express.js. It provides a structured, modular architecture perfect for scalable applications.
+    *   **Database:** **PostgreSQL** - A powerful, open-source object-relational database system known for its reliability and feature robustness.
+    *   **ORM (Object-Relational Mapping):** **Prisma** - A next-generation ORM for Node.js and TypeScript that simplifies database access with a type-safe client.
+    *   **Authentication:** **JWT (JSON Web Tokens)** implemented using Passport.js for securing API endpoints.
+*   **Development & Deployment:**
+    *   **Containerization:** **Docker** - To create consistent development and production environments for the backend and database.
 
-*   **Backend (Server - `packages/server`):**
-    *   **Framework:** NestJS, a progressive Node.js framework built with TypeScript. It provides an out-of-the-box application architecture which allows for the creation of highly testable, scalable, loosely coupled, and easily maintainable applications.
-    *   **Language:** TypeScript.
-    *   **Database:** MongoDB, a NoSQL document database, is chosen for its flexibility in storing unstructured journal entries and its scalability.
-    *   **ODM (Object Data Modeling):** Mongoose to model application data for MongoDB.
-    *   **Authentication:** Passport.js with a JWT (JSON Web Token) strategy for securing endpoints.
+---
 
-*   **AI Integration:**
-    *   **OpenAI API:** The GPT-3.5 or GPT-4 model will be used to generate insightful and personalized reflection prompts based on the user's journal entries.
+### **2. Repository Folder Structure**
 
-*   **DevOps & Tooling:**
-    *   **Containerization:** Docker will be used to containerize the MongoDB instance for consistent development and production environments.
-    *   **Code Formatting & Linting:** Prettier and ESLint will be enforced to maintain a consistent code style across the entire project.
-
-### 2. Detailed Folder Structure
-
-The project will be organized as a monorepo to streamline development and dependency management.
+The repository will be a `pnpm` monorepo. Here is the detailed hierarchical structure:
 
 ```
-mindbloom-ai-journal/
-├── .gitignore               # Specifies intentionally untracked files to ignore
-├── package.json             # Root package.json defining workspaces and root scripts
-├── README.md                # The main documentation file for the project
-└── packages/                # Contains all the individual applications/services
-    ├── app/                 # The React Native mobile application
-    │   ├── android/             # Android-specific build files
-    │   ├── ios/                 # iOS-specific build files
-    │   ├── src/                 # Main source code for the app
-    │   │   ├── api/             # Functions for interacting with the backend API (e.g., journalService.ts)
-    │   │   ├── components/      # Reusable UI components (e.g., Button.tsx, MoodSelector.tsx)
-    │   │   ├── config/          # App configuration (e.g., API_URL)
-    │   │   ├── navigation/      # React Navigation stacks and navigators
-    │   │   ├── screens/         # App screens (e.g., HomeScreen.tsx, JournalEntryScreen.tsx)
-    │   │   ├── state/           # Zustand state management stores (e.g., userStore.ts)
-    │   │   └── App.tsx          # The root component of the React Native app
-    │   └── package.json         # Dependencies and scripts for the mobile app
-    │
-    └── server/              # The NestJS backend server
-        ├── src/                 # Main source code for the server
-        │   ├── ai/              # AI-related services (e.g., ai.service.ts for OpenAI calls)
-        │   ├── auth/            # Authentication logic (e.g., auth.module.ts, jwt.strategy.ts)
-        │   ├── common/          # Common modules, decorators, guards
-        │   ├── journal/         # Journal entry module (controller, service, schema)
-        │   ├── users/           # User management module (controller, service, schema)
-        │   ├── app.controller.ts  # Root app controller
-        │   ├── app.module.ts    # Root app module
-        │   └── main.ts          # The application entry file
-        ├── .env.example         # Example environment variables file
-        └── package.json         # Dependencies and scripts for the server
+campus-gigs/
+├── .github/                      # GitHub-specific files
+│   └── workflows/
+│       └── ci.yml                # Continuous Integration workflow
+│   └── PULL_REQUEST_TEMPLATE.md
+├── apps/                         # Contains runnable applications
+│   ├── mobile/                   # React Native (Expo) mobile app
+│   │   ├── app/                  # Expo Router file-based routes
+│   │   │   ├── (tabs)/           # Directory for tab-based navigation
+│   │   │   │   ├── _layout.tsx   # Tab navigator layout
+│   │   │   │   ├── index.tsx     # Gig feed screen
+│   │   │   │   ├── map.tsx       # Map view screen
+│   │   │   │   └── profile.tsx   # User profile screen
+│   │   │   └── _layout.tsx       # Root stack layout
+│   │   ├── assets/               # Static assets (images, fonts)
+│   │   ├── components/           # Reusable React components
+│   │   │   └── common/           # General-purpose components (buttons, inputs)
+│   │   ├── constants/            # App-wide constants (colors, styles)
+│   │   ├── hooks/                # Custom React hooks
+│   │   ├── services/             # API services, utility functions
+│   │   │   └── api.ts            # Central API client
+│   │   ├── app.json              # Expo configuration file
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   └── server/                   # NestJS backend application
+│       ├── prisma/
+│       │   └── schema.prisma     # Prisma schema for database models
+│       ├── src/
+│       │   ├── auth/             # Authentication module (login, signup)
+│       │   ├── gigs/             # Gigs module (CRUD for gigs)
+│       │   ├── users/            # Users module (user profiles)
+│       │   ├── app.controller.ts # Root controller
+│       │   ├── app.module.ts     # Root module
+│       │   └── main.ts           # Application entry point
+│       ├── test/                 # End-to-end and unit tests
+│       ├── Dockerfile
+│       ├── package.json
+│       └── tsconfig.json
+│
+├── packages/                     # Shared code and utilities
+│   └── types/                    # Shared TypeScript types/interfaces
+│       ├── src/
+│       │   ├── index.ts
+│       │   ├── gig.ts
+│       │   └── user.ts
+│       └── package.json
+│
+├── .dockerignore
+├── .editorconfig
+├── .env.example                  # Example environment variables
+├── .gitignore
+├── docker-compose.yml            # For local development database and server
+├── package.json                  # Root package.json for monorepo scripts
+├── pnpm-workspace.yaml           # Defines the monorepo workspaces
+└── README.md
 ```
 
-### 3. README.md Content
+---
+
+### **3. README.md Content**
 
 ```markdown
-# Mindbloom AI - Gamified AI Journal
+# Campus Gigs
 
-Mindbloom is a mobile journaling application designed to make self-reflection a fun and insightful daily habit. It combines gamification elements with powerful AI-driven prompts and mood tracking to help users understand their emotional patterns and foster personal growth.
+**Connecting university students with part-time gigs near campus.**
 
-This repository contains the full source code for the Mindbloom AI mobile app and its supporting backend services.
+Campus Gigs is a mobile application designed to bridge the gap between students seeking flexible, local work and businesses looking for temporary, on-demand help.
 
 ## ✨ Features (MVP)
 
-*   **Daily Journaling:** A simple and intuitive interface for writing daily entries.
-*   **AI Reflection Prompts:** After completing an entry, users receive personalized, thought-provoking questions generated by AI to encourage deeper reflection.
-*   **Mood Tracking:** Easily log your mood each day to visualize trends over time.
-*   **Gamification:** Earn points and unlock achievements for maintaining a consistent journaling streak.
-*   **Secure & Private:** All journal entries are securely stored and encrypted.
+*   **Student Accounts:** Simple email/password signup and profile creation.
+*   **Business Accounts:** Post and manage part-time job listings (gigs).
+*   **Gig Feed:** Students can browse a real-time feed of available gigs, sorted by proximity and posting date.
+*   **Map View:** Visualize available gigs on a map centered around the university campus.
+*   **Simple Applications:** Students can apply to gigs with a single tap.
+*   **Application Tracking:** Businesses can view and manage applications for their gigs.
 
 ## 🚀 Tech Stack
 
-This project is a monorepo managed with npm workspaces.
+This project is a TypeScript monorepo managed with `pnpm` workspaces.
 
-*   **Mobile App (Client):**
-    *   [React Native](https://reactnative.dev/)
-    *   [TypeScript](https://www.typescriptlang.org/)
-    *   [React Navigation](https://reactnavigation.org/) for routing
-    *   [Zustand](https://github.com/pmndrs/zustand) for state management
-    *   [Axios](https://axios-http.com/) for API communication
+*   **Monorepo:** [pnpm Workspaces](https://pnpm.io/workspaces)
+*   **Mobile App:** [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
+    *   **Routing:** Expo Router
+    *   **UI:** Native components, potentially with a simple component library.
+*   **Backend:** [NestJS](https://nestjs.com/) (Node.js framework)
+*   **Database:** [PostgreSQL](https://www.postgresql.org/)
+*   **ORM:** [Prisma](https://www.prisma.io/)
+*   **Authentication:** JWT with [Passport.js](http://www.passportjs.org/)
+*   **Containerization:** [Docker](https://www.docker.com/)
 
-*   **Backend (Server):**
-    *   [Node.js](https://nodejs.org/)
-    *   [NestJS](https://nestjs.com/) (TypeScript framework)
-    *   [MongoDB](https://www.mongodb.com/) for the database
-    *   [Mongoose](https://mongoosejs.com/) as the ODM
-    *   [Passport.js](http://www.passportjs.org/) with JWT for authentication
-
-*   **AI Integration:**
-    *   [OpenAI API](https://openai.com/api/) (GPT-3.5/4) for generating reflection prompts.
-
-*   **DevOps & Tooling:**
-    *   [Docker](https://www.docker.com/) for containerization
-    *   [npm Workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) for monorepo management
-    *   [Prettier](https://prettier.io/) for code formatting
-    *   [ESLint](https://eslint.org/) for code linting
-
-## 📂 Project Structure
-
-The repository is structured as a monorepo:
-
-` ` `
-/
-├── packages/
-│   ├── app/      # The React Native mobile application
-│   └── server/   # The NestJS backend server
-├── .gitignore
-├── package.json  # Root package.json for workspaces
-└── README.md
-` ` `
+---
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
 
 *   [Node.js](https://nodejs.org/en/) (v18 or later)
-*   [npm](https://www.npmjs.com/) (v8 or later)
-*   [Docker](https://www.docker.com/) & Docker Compose (for running the database)
-*   React Native development environment (see [React Native docs](https://reactnative.dev/docs/environment-setup))
-*   A [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) account or a local MongoDB instance.
-*   An [OpenAI API Key](https://platform.openai.com/).
+*   [pnpm](https://pnpm.io/installation)
+*   [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose
+*   [Expo Go](https://expo.dev/go) app on your mobile device (iOS or Android) or a simulator.
 
-### Installation & Setup
+### 1. Clone the Repository
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/your-username/mindbloom-ai-journal.git
-    cd mindbloom-ai-journal
-    ```
+```bash
+git clone https://github.com/your-username/campus-gigs.git
+cd campus-gigs
+```
 
-2.  **Install dependencies:**
-    This command will install dependencies for the root, the `app`, and the `server` packages.
-    ```bash
-    npm install
-    ```
+### 2. Install Dependencies
 
-3.  **Set up environment variables for the server:**
-    Navigate to the server directory and create a `.env` file from the example.
-    ```bash
-    cd packages/server
-    cp .env.example .env
-    ```
-    Now, edit the `.env` file with your database connection string and API keys:
-    ```env
-    # packages/server/.env
-    DATABASE_URL="your_mongodb_connection_string"
-    JWT_SECRET="your_strong_jwt_secret"
-    OPENAI_API_KEY="your_openai_api_key"
-    ```
+Install all dependencies for all workspaces from the root directory.
 
-4.  **Set up environment variables for the app:**
-    Create a config file in the app source code to store the backend URL.
-    `packages/app/src/config/index.ts`
-    ```typescript
-    export const API_URL = 'http://localhost:3000/api'; // Adjust if your server runs elsewhere
-    ```
+```bash
+pnpm install
+```
 
-### Running the Application
+### 3. Setup Environment Variables
 
-1.  **Start the Backend Server:**
-    From the root directory, run:
-    ```bash
-    npm run start:server
-    ```
-    The server will be running on `http://localhost:3000`.
+The backend server and database require environment variables to run.
 
-2.  **Start the Mobile App:**
-    In a new terminal window, from the root directory, run:
-    ```bash
-    # For iOS
-    npm run start:ios
+First, create a `.env` file in the root of the project by copying the example:
 
-    # For Android
-    npm run start:android
-    ```
-This will start the Metro bundler and launch the app in your selected simulator/emulator.
+```bash
+cp .env.example .env
+```
 
+Now, open `.env` and fill in the required values. The default values are configured to work with the `docker-compose.yml` setup. You should set a secure `JWT_SECRET`.
+
+### 4. Start the Development Environment
+
+This command will use Docker Compose to spin up the PostgreSQL database and the NestJS backend server with hot-reloading.
+
+```bash
+docker-compose up --build
+```
+
+You can verify the server is running by navigating to `http://localhost:3001` in your browser. You should see "Hello World!".
+
+### 5. Run the Mobile App
+
+In a separate terminal, navigate to the mobile app directory and start the Expo development server.
+
+```bash
+cd apps/mobile
+pnpm start
+```
+
+This will open a Metro Bundler interface in your terminal. You can now:
+*   Scan the QR code with the Expo Go app on your phone.
+*   Press `i` to run on an iOS Simulator.
+*   Press `a` to run on an Android Emulator.
+
+The mobile app is configured to connect to the backend server running on `localhost:3001`.
 ```

@@ -2,7 +2,7 @@
 
 import os
 import requests
-from github import Github, GithubException
+from github import Github, GithubException, Auth
 from crewai.tools import BaseTool
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
@@ -31,7 +31,11 @@ class GitHubScaffolderTool(BaseTool):
             if not github_token:
                 return "Error: GITHUB_TOKEN environment variable not set."
 
-            g = Github(github_token)
+           
+            auth = Auth.Token(github_token)
+            
+            g = Github(auth=auth)
+           
             user = g.get_user()
             
             print(f"Attempting to create or get repository: {plan.repo_name}")

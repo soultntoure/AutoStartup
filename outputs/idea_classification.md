@@ -1,1 +1,1 @@
-{"classification":"software","reason":"The idea describes a 'gamified daily journaling app' with 'AI reflection prompts' and 'mood tracking', which clearly indicates the development of a code-based software product, likely a mobile application."}
+{"classification":"software","reason":"The idea explicitly describes a 'mobile app', which is a code-based product and therefore falls under the software category."}
