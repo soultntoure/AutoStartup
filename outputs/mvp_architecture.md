@@ -1,157 +1,182 @@
-This plan details the complete technical architecture for the CampusGigs MVP.
+## Zenith Journal: MVP Technical Architecture
+
+This document outlines the complete technical architecture for the Zenith Journal MVP, a gamified daily journaling app with AI reflection prompts and mood tracking.
 
 ### 1. Recommended Tech Stack
 
-- **Frontend (Mobile App):** React Native with Expo (TypeScript)
-  - **Why:** Expo allows for rapid development, easy builds, and over-the-air updates. React Native provides a cross-platform solution from a single codebase, which is ideal for an MVP targeting both iOS and Android. TypeScript adds type safety, reducing bugs.
-- **Backend:** Node.js with Express.js (TypeScript)
-  - **Why:** A popular, high-performance stack for building REST APIs. The non-blocking I/O is well-suited for a high-concurrency application. Using TypeScript on both front and back-end enables code sharing and consistency.
-- **Database:** PostgreSQL (with PostGIS extension)
-  - **Why:** A powerful, open-source relational database. The PostGIS extension is crucial for efficient geospatial queries (e.g., "find gigs within 2km of campus"), which is a core feature that differentiates this app from competitors.
-- **ORM:** Prisma
-  - **Why:** Provides a type-safe database client and simplifies database migrations and queries, improving developer productivity and reducing common errors.
-- **Monorepo Management:** PNPM Workspaces
-  - **Why:** A monorepo is ideal for this project, as the mobile app and server are tightly coupled. PNPM is efficient with disk space and provides fast installation times. It simplifies managing dependencies and running scripts across packages.
-- **Authentication:** JWT (JSON Web Tokens)
-  - **Why:** A stateless and standard way to handle user authentication for APIs, perfect for a mobile app client.
+The technology stack is chosen for rapid development, scalability, and a unified developer experience using the JavaScript/TypeScript ecosystem.
 
-### 2. Hierarchical Folder Structure
+*   **Monorepo:** `pnpm workspaces` - To manage the backend and mobile app in a single repository.
+*   **Mobile App (Frontend):** `React Native` with `Expo` - For cross-platform (iOS & Android) development with a fast development cycle.
+*   **Backend:** `Node.js` with `Express.js` & `TypeScript` - For a robust, fast, and type-safe API.
+*   **Database:** `MongoDB` with `Mongoose` - A flexible NoSQL database ideal for storing journal entries and user data. Deployed via `MongoDB Atlas`.
+*   **AI Integration:** `OpenAI API` (GPT-4o) - To generate intelligent and empathetic reflection prompts.
+*   **Authentication:** `JSON Web Tokens (JWT)` - For securing the API and managing user sessions.
+*   **Deployment:**
+    *   API: `Vercel` or `Render` (Serverless)
+    *   Database: `MongoDB Atlas` (Cloud)
+    *   Mobile App: `Expo Application Services (EAS)` for App Store / Play Store builds.
 
-A monorepo structure using PNPM workspaces is recommended to manage the mobile app and server codebases in a single repository.
+### 2. Repository Folder Structure
+
+A monorepo structure managed by pnpm is used to house the mobile app and the backend API.
 
 ```
-/campus-gigs-mvp
-├── .github/
-│   └── workflows/
-│       └── ci.yml            # CI pipeline for linting, testing, and building
+zenith-journal/
+├── apps/
+│   ├── api/                    # Node.js/Express Backend API
+│   │   ├── src/
+│   │   │   ├── api/
+│   │   │   │   └── v1/
+│   │   │   │       ├── routes/         # API routes (auth, journal, etc.)
+│   │   │   │       │   ├── auth.routes.ts
+│   │   │   │       │   ├── journal.routes.ts
+│   │   │   │       │   └── user.routes.ts
+│   │   │   │       ├── controllers/    # Route handlers and business logic
+│   │   │   │       │   ├── auth.controller.ts
+│   │   │   │       │   ├── journal.controller.ts
+│   │   │   │       │   └── user.controller.ts
+│   │   │   │       ├── models/         # Mongoose DB schemas
+│   │   │   │       │   ├── JournalEntry.ts
+│   │   │   │       │   └── User.ts
+│   │   │   │       ├── middlewares/    # Express middlewares (e.g., auth check)
+│   │   │   │       │   └── auth.middleware.ts
+│   │   │   │       └── services/       # Services for 3rd party integrations
+│   │   │   │           └── ai.service.ts
+│   │   │   ├── config/             # Configuration files (e.g., DB connection)
+│   │   │   │   └── db.ts
+│   │   │   ├── app.ts              # Express app setup and middleware registration
+│   │   │   └── server.ts           # Server entry point
+│   │   ├── .env.example
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── mobile/                 # React Native (Expo) Mobile App
+│       ├── app/                  # File-based routing with Expo Router
+│       │   ├── (tabs)/           # Main app layout with tabs
+│       │   │   ├── _layout.tsx
+│       │   │   ├── journal.tsx     # Main journaling screen
+│       │   │   ├── progress.tsx    # Gamified progress and mood charts
+│       │   │   └── settings.tsx
+│       │   ├── auth/             # Authentication screens
+│       │   │   ├── login.tsx
+│       │   │   └── signup.tsx
+│       │   ├── _layout.tsx       # Root layout component
+│       │   └── index.tsx         # App entry/loading/redirect logic
+│       ├── assets/               # Static assets (images, fonts)
+│       ├── components/           # Reusable React Native components
+│       ├── constants/            # App-wide constants (colors, styles)
+│       ├── hooks/                # Custom React hooks (e.g., useAuth)
+│       ├── services/             # API interaction layer
+│       ├── app.json              # Expo configuration file
+│       ├── package.json
+│       └── tsconfig.json
 ├── packages/
-│   ├── app/                  # React Native (Expo) mobile application
-│   │   ├── app/              # Expo Router file-based routing directory
-│   │   │   ├── (auth)/       # Screens for authentication flow (login, signup)
-│   │   │   ├── (tabs)/       # Main app layout with bottom tabs (feed, map, profile)
-│   │   │   └── _layout.tsx   # Root layout for the app
-│   │   ├── assets/           # Static assets like images and fonts
-│   │   ├── components/       # Reusable UI components (e.g., GigCard, Button)
-│   │   ├── services/         # API service layer for communicating with the backend
-│   │   ├── app.json          # Expo configuration file
-│   │   └── package.json
-│   │
-│   └── server/               # Node.js (Express) backend
-│       ├── prisma/
-│       │   └── schema.prisma # Prisma schema defining database models
+│   └── types/                  # Shared TypeScript types
 │       ├── src/
-│       │   ├── api/          # API routes (e.g., auth.routes.ts, gigs.routes.ts)
-│       │   ├── controllers/  # Request/response handlers for routes
-│       │   ├── middleware/   # Custom middleware (e.g., authentication)
-│       │   ├── services/     # Business logic (e.g., geo-querying for gigs)
-│       │   ├── app.ts        # Express app configuration
-│       │   └── server.ts     # Server entry point
-│       ├── .env.example      # Example environment variables
+│       │   ├── index.ts
+│       │   └── journal.ts
 │       └── package.json
-│
 ├── .gitignore
-├── package.json              # Root package.json for monorepo scripts
-├── pnpm-workspace.yaml       # Defines the monorepo workspaces
-├── README.md                 # Project README file
-└── tsconfig.base.json        # Shared TypeScript configuration
+├── package.json                # Root package.json
+├── pnpm-workspace.yaml         # pnpm workspace configuration
+├── README.md
+└── tsconfig.json               # Root TypeScript configuration
 ```
 
 ### 3. README.md File Content
 
-```markdown
-# CampusGigs MVP
+---
 
-CampusGigs is a mobile app that connects university students with part-time gigs near campus. Our mission is to provide students with a simple and efficient way to find flexible work that fits their busy schedules, while helping local businesses find reliable, temporary help.
+# Zenith Journal
 
-This repository contains the source code for the CampusGigs mobile application (React Native) and the backend API (Node.js/Express).
+Zenith is a gamified daily journaling app designed to make self-reflection a rewarding and consistent habit. It combines AI-powered prompts, detailed mood tracking, and engaging game mechanics to help you understand your mind and build a positive routine.
 
-## ✨ Key MVP Features
+## ✨ Features
 
-- **Student & Employer Accounts:** Separate registration and profile management for students and businesses.
-- **Gig Postings:** Employers can post gigs with details like title, description, pay, location, and time.
-- **Hyper-Local Gig Feed:** Students see a feed of available gigs, prioritized by proximity to their campus.
-- **Geo-Location Search:** A map view to visually search for gigs nearby.
-- **Simple Applications:** Students can apply for gigs with a single tap.
+*   **AI-Powered Prompts:** Get intelligent, empathetic prompts to guide your reflections.
+*   **Mood Tracking:** Log your mood and activities to discover patterns and insights.
+*   **Gamified Experience:** Earn points, unlock achievements, and watch your personal 'Zenith' grow as you build your journaling streak.
+*   **Data-Driven Insights:** Visualize your progress and mood trends over time with beautiful charts.
 
-## 🚀 Tech Stack
+## 🛠️ Tech Stack
 
-- **Monorepo:** PNPM Workspaces
-- **Mobile App:** React Native (Expo) & TypeScript
-- **Backend:** Node.js, Express, TypeScript
-- **Database:** PostgreSQL with PostGIS
-- **ORM:** Prisma
-- **Authentication:** JWT
+This project is a monorepo managed with `pnpm workspaces`.
 
-## 📂 Repository Structure
+| Area         | Technology                                      |
+| :----------- | :---------------------------------------------- |
+| **Mobile App** | [React Native](https://reactnative.dev/) + [Expo](https://expo.dev/)                 |
+| **Backend**    | [Node.js](https://nodejs.org/) + [Express.js](https://expressjs.com/) + [TypeScript](https://www.typescriptlang.org/) |
+| **Database**   | [MongoDB](https://www.mongodb.com/) + [Mongoose](https://mongoosejs.com/)                  |
+| **AI**         | [OpenAI API](https://beta.openai.com/docs/)     |
 
-This project is a monorepo managed by `pnpm`. The code is organized into two main packages:
+## 🚀 Getting Started
 
-- `packages/app`: The React Native (Expo) mobile application.
-- `packages/server`: The Node.js backend server.
+Follow these instructions to get the project up and running on your local machine for development and testing purposes.
 
-Shared configurations like `tsconfig.base.json` are located in the root directory.
+### Prerequisites
 
-## Prerequisites
+- [Node.js](https://nodejs.org/en/) (v18 or later)
+- [pnpm](https://pnpm.io/installation)
+- [Expo Go](https://expo.dev/go) app on your mobile device or an emulator setup.
 
-Before you begin, ensure you have the following installed:
-
-- [Node.js](https://nodejs.org/) (v18 or later)
-- [PNPM](https://pnpm.io/installation)
-- [Docker](https://www.docker.com/get-started/) (for running PostgreSQL)
-
-## ⚙️ Setup and Installation
+### Installation
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/campus-gigs-mvp.git
-    cd campus-gigs-mvp
+    git clone https://github.com/your-username/zenith-journal.git
+    cd zenith-journal
     ```
 
-2.  **Install dependencies from the root directory:**
+2.  **Install dependencies:**
+    *pnpm will automatically install dependencies for all workspaces (api, mobile, etc.).*
     ```bash
     pnpm install
     ```
 
-3.  **Set up the database:**
-    -   Start a PostgreSQL instance using Docker. This command also sets up the PostGIS extension.
+3.  **Set up environment variables:**
+
+    *   **For the API:**
+        Create a `.env` file in `apps/api/` by copying the example file:
         ```bash
-        docker run --name campus-gigs-db -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgis/postgis
+        cp apps/api/.env.example apps/api/.env
+        ```
+        Then, fill in the required values in `apps/api/.env`:
+        ```
+        # Server Configuration
+        PORT=8000
+
+        # MongoDB Connection
+        MONGO_URI=your_mongodb_connection_string
+
+        # JWT Configuration
+        JWT_SECRET=your_super_secret_jwt_key
+        JWT_EXPIRES_IN=1d
+
+        # OpenAI API Key
+        OPENAI_API_KEY=your_openai_api_key
         ```
 
-4.  **Configure environment variables for the server:**
-    -   Navigate to the server package: `cd packages/server`
-    -   Copy the example environment file:
+    *   **For the Mobile App:**
+        The mobile app will get its API URL from an environment variable. Create a `.env` file in `apps/mobile/`:
         ```bash
-        cp .env.example .env
+        touch apps/mobile/.env
         ```
-    -   Update the `.env` file with your database connection string and a secure JWT secret:
+        Add the following variable, pointing to your local API server:
         ```
-        DATABASE_URL="postgresql://postgres:mysecretpassword@localhost:5432/postgres?schema=public"
-        JWT_SECRET="YOUR_SUPER_SECRET_KEY"
+        EXPO_PUBLIC_API_URL=http://localhost:8000/api/v1
         ```
 
-5.  **Run database migrations:**
-    -   From the `packages/server` directory, apply the Prisma schema to your database:
+4.  **Run the project:**
+
+    *   **Run the Backend API:**
         ```bash
-        pnpm prisma migrate dev --name init
+        pnpm --filter api dev
         ```
+        The API server should now be running on `http://localhost:8000`.
 
-## ▶️ Running the App
-
-You will need two separate terminal windows to run the backend and frontend concurrently.
-
-1.  **Start the Backend Server:**
-    -   From the root directory, run:
+    *   **Run the Mobile App:**
+        In a new terminal window:
         ```bash
-        pnpm --filter server dev
+        pnpm --filter mobile start
         ```
-    -   The server will be running on `http://localhost:4000`.
-
-2.  **Start the Mobile App:**
-    -   In a new terminal, from the root directory, run:
-        ```bash
-        pnpm --filter app start
-        ```
-    -   This will start the Expo development server. You can then run the app on an iOS simulator, Android emulator, or on your physical device using the Expo Go app.
-
-```
+        This will start the Expo development server. You can now scan the QR code with the Expo Go app on your phone or run it in a simulator.

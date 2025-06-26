@@ -51,6 +51,7 @@ competitive_analysis_task:
 
     Your final output must be a concise report summarizing the 
     competitive landscape or a clear statement of bypass.
+  
   expected_output: >
     A report with a section for each competitor, including their
     summary, strengths, and weaknesses, or a statement indicating bypass.
@@ -60,13 +61,14 @@ competitive_analysis_task:
     - orchestrate_next_steps_task # Provide the orchestrator's decision for context
   output_file: 'outputs/competitive_analysis.md'
 
+
 propose_mvp_architecture_task:
   description: >
     Based on the startup idea: '{idea}' and the competitive analysis,
     design a detailed technical architecture for the Minimum Viable Product (MVP).
     
     Your plan MUST include:
-    1.  A recommended tech stack (e.g., Frontend: React, Backend: Node.js/Express, Database: PostgreSQL).
+    1.  A recommended tech stack for the project.
     2.  A detailed, hierarchical folder structure for the code repository.
     3.  A complete, well-written README.md file content in Markdown format.
 
@@ -81,18 +83,58 @@ propose_mvp_architecture_task:
     - competitive_analysis_task  
   output_file: 'outputs/mvp_architecture.md' 
 
+
+extract_scaffolding_plan_task:
+  description: >
+    Read the detailed technical plan provided in the context. Your sole purpose is to act
+    as a data converter, transforming the human-readable markdown plan into a structured JSON object.
+
+    You must perform the following steps:
+    1. Generate a catchy, URL_safe version repository name of the startup idea: '{idea}
+    2. Generate a concise, one-sentence repository description from the idea.
+    3. Parse the hierarchical folder structure to identify every single file path.
+    4. Extract the full content for the 'README.md' file.
+    5. For ALL other files, generate high-quality boilerplate content based on the tech stack in the plan.
+
+  expected_output: >
+    A single, clean JSON object containing 'repo_name', 'description', and 'files' keys.
+    The 'files' key must contain a list of objects, each with 'path' and 'content'.
+    The final output MUST be only the JSON object and nothing else.
+
+    Example:
+    {
+      "repo_name": "campus-gigs-student-finder", # <-- Fixed JSON syntax
+      "description": "A mobile application designed to connect university students with flexible, part-time gigs.", # <-- Fixed JSON syntax
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "# Dependencies\n/node_modules\n\n# Production\n/build\n\n# Env\n.env\n.env.local"
+        },
+        {
+          "path": "README.md",
+          "content": "# CampusGigs - Student Job Finder\n\nA mobile application designed to connect university students with flexible, part-time gigs near their campus..."
+        },
+        {
+          "path": "packages/app/src/components/Button.tsx",
+          "content": "import React from 'react';\nimport {{ TouchableOpacity, Text, StyleSheet }} from 'react-native';\n\ninterface ButtonProps {{\n  title: string;\n  onPress: () => void;\n}}\n\nconst Button: React.FC<ButtonProps> = ({{ title, onPress }}) => {{\n  return (\n    <TouchableOpacity style={{styles.button}} onPress={{    onPress    }}>\n      <Text style={{   styles.text   }}>{{  title  }}</Text>\n    </TouchableOpacity>\n  );\n}};\n\nconst styles = StyleSheet.create({{\n  button: {{\n    backgroundColor: '#007bff',\n    padding: 10,\n    borderRadius: 5,\n    alignItems: 'center',\n  }},\n  text: {{\n    color: '#ffffff',\n    fontSize: 16,\n  }},\n}});\n\nexport default Button;"
+        }
+      ]
+    }
+  agent: mvp_architect
+  context:
+    - propose_mvp_architecture_task
+  output_file: 'outputs/scaffolding_plan.json'
+  
+
 scaffold_github_repo_task:
   description: >
-    Use the provided technical architecture plan to create a new GitHub repository.
-    The repository name should be a catchy, URL-safe version of the startup idea: '{idea}'.
-    
-    You MUST perform the following actions using your tools:
-    1.  Create a new public GitHub repository with the generated name.
-    2.  Use the folder structure from the plan to create all necessary directories.
-    3.  Create the README.md file in the root of the repository with the content from the proposed plan.
+    Your only job is to execute the GitHub Repository Scaffolder tool.
+    Take the complete JSON object from the context of the previous step.
+    You MUST pass the 'repo_name', 'description', and 'files' values from the
+    JSON object directly to the corresponding arguments of the tool. Do not modify them.
   expected_output: >
-    The URL of the newly created GitHub repository, or a statement that the task is not applicable.
+    The full URL of the successfully created and populated GitHub repository.
   agent: mvp_architect
   output_file: 'outputs/github_repository.md'
   context:
-    - propose_mvp_architecture_task 
+    - extract_scaffolding_plan_task

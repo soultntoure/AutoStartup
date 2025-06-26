@@ -1,1 +1,1 @@
-{"classification":"software","reason":"The idea explicitly describes building a 'mobile app', which is a code-based product falling under the 'software' category."}
+{"classification":"software","reason":"The idea describes a 'gamified daily journaling app with AI reflection prompts and mood tracking', which inherently refers to a mobile or web application, fitting the definition of a software product."}

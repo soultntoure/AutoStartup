@@ -18,12 +18,12 @@ def run():
     Run the crew.
     """
     inputs = {
-        'idea': 'A mobile app that matches university students with part-time gigs near campus.',
+        'idea': 'A gamified daily journaling app with AI reflection prompts and mood tracking.',
     }
     
     try:
         result = Autostartup().crew().kickoff(inputs=inputs)
-        print(result.raw)
+        print(f"Crew execution completed successfully at {datetime.now()}.")
     except Exception as e:
         raise Exception(f"An error occurred while running the crew: {e}")
 

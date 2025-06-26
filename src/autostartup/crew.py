@@ -82,6 +82,13 @@ class Autostartup():
         )
 
     @task
+    def extract_scaffolding_plan_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['extract_scaffolding_plan_task'],
+        )
+    
+    
+    @task
     def scaffold_github_repo_task(self) -> Task:
         return Task(
             config=self.tasks_config['scaffold_github_repo_task'],
@@ -90,12 +97,6 @@ class Autostartup():
     @crew
     def crew(self) -> Crew:
         """Creates the Autostartup crew"""
-        # The logic for how tasks are run will depend on how you interpret the
-        # orchestrator's output. For a truly dynamic flow, you would need
-        # a script that runs tasks conditionally based on the content of
-        # 'outputs/orchestration_decision.md'.
-        # This setup defines all possible tasks, but their execution
-        # is conceptually gated by the orchestrator's decision.
         return Crew(
             agents=self.agents,
             tasks=[
@@ -104,6 +105,7 @@ class Autostartup():
                 # These tasks would be part of sub-workflows triggered based on the orchestrator
                 self.competitive_analysis_task(), 
                 self.propose_mvp_architecture_task(),
+                self.extract_scaffolding_plan_task(),
                 self.scaffold_github_repo_task()
             ],
             process=Process.sequential,
