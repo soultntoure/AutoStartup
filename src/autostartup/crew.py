@@ -1,45 +1,21 @@
 # src/autostartup/crew.py
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai.tasks.conditional_task import ConditionalTask
 from crewai.tasks.task_output import TaskOutput
 from crewai_tools import SerperDevTool
 from dotenv import load_dotenv
-from .tools.github_tools import CreateGitHubRepoTool
+
+from .tools.github_tools import GitHubScaffolderTool
+# Updated import for the new tool objects
+from .tools.orchestrator_tools import (
+    trigger_software_workflow_tool,
+    trigger_strategic_workflow_tool,
+    handle_vague_idea_tool,
+    bypass_competitive_analysis_tool
+)
 from .models import IdeaClassification
 
 load_dotenv()
-
-# Enhanced condition functions with confidence thresholds
-def is_software_idea(output: TaskOutput) -> bool:
-    """Check if the classified idea is 'software' with sufficient confidence"""
-    if hasattr(output, 'pydantic') and output.pydantic:
-        classification: IdeaClassification = output.pydantic
-        return (classification.classification == "software" and 
-                classification.confidence >= 0.7)  # Only proceed if confident
-    
-    # Fallback to raw text analysis
-    return "software" in output.raw.lower()
-
-def is_strategic_idea(output: TaskOutput) -> bool:
-    """Check if the classified idea is 'strategic' with sufficient confidence"""
-    if hasattr(output, 'pydantic') and output.pydantic:
-        classification: IdeaClassification = output.pydantic
-        return (classification.classification == "strategic" and 
-                classification.confidence >= 0.7)
-    
-    return "strategic" in output.raw.lower()
-
-def should_analyze_market(output: TaskOutput) -> bool:
-    """Check if market analysis should be performed"""
-    if hasattr(output, 'pydantic') and output.pydantic:
-        classification: IdeaClassification = output.pydantic
-        return (classification.classification in ["software", "strategic"] and 
-                classification.confidence >= 0.6)
-    
-    # Fallback
-    raw_lower = output.raw.lower()
-    return "software" in raw_lower or "strategic" in raw_lower
 
 @CrewBase
 class Autostartup():
@@ -48,11 +24,19 @@ class Autostartup():
     tasks_config = 'config/tasks.yaml'
 
     search_tool = SerperDevTool()
+    # The OrchestratorTools() instantiation is no longer needed
 
     @agent
     def orchestrator(self) -> Agent:
         return Agent(
             config=self.agents_config['orchestrator'],
+            # Pass the imported Tool objects directly
+            tools=[
+                trigger_software_workflow_tool,
+                trigger_strategic_workflow_tool,
+                handle_vague_idea_tool,
+                bypass_competitive_analysis_tool
+            ],
             verbose=True
         )
 
@@ -68,7 +52,7 @@ class Autostartup():
     def mvp_architect(self) -> Agent:
         return Agent(
             config=self.agents_config['mvp_architect'],
-            tools=[CreateGitHubRepoTool()],
+            tools=[GitHubScaffolderTool()],
             verbose=True
         )
 
@@ -80,32 +64,48 @@ class Autostartup():
         )
     
     @task
+    def orchestrate_next_steps_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['orchestrate_next_steps_task'],
+        )
+
+    @task
     def competitive_analysis_task(self) -> Task:
-        return ConditionalTask(
+        return Task(
             config=self.tasks_config['competitive_analysis_task'],
-            condition=should_analyze_market
         )
         
     @task
     def propose_mvp_architecture_task(self) -> Task:
-        return ConditionalTask(
+        return Task(
             config=self.tasks_config['propose_mvp_architecture_task'],
-            condition=is_software_idea
         )
 
     @task
     def scaffold_github_repo_task(self) -> Task:
-        return ConditionalTask(
+        return Task(
             config=self.tasks_config['scaffold_github_repo_task'],
-            condition=is_software_idea
         )
 
     @crew
     def crew(self) -> Crew:
         """Creates the Autostartup crew"""
+        # The logic for how tasks are run will depend on how you interpret the
+        # orchestrator's output. For a truly dynamic flow, you would need
+        # a script that runs tasks conditionally based on the content of
+        # 'outputs/orchestration_decision.md'.
+        # This setup defines all possible tasks, but their execution
+        # is conceptually gated by the orchestrator's decision.
         return Crew(
             agents=self.agents,
-            tasks=self.tasks,
+            tasks=[
+                self.classify_idea_task(),
+                self.orchestrate_next_steps_task(),
+                # These tasks would be part of sub-workflows triggered based on the orchestrator
+                self.competitive_analysis_task(), 
+                self.propose_mvp_architecture_task(),
+                self.scaffold_github_repo_task()
+            ],
             process=Process.sequential,
             verbose=True
         )

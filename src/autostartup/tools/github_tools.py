@@ -2,34 +2,54 @@
 
 import os
 import requests
+from github import Github, GithubException
 from crewai.tools import BaseTool
 from dotenv import load_dotenv
+from textwrap import dedent
 
-load_dotenv()  # Loads GITHUB_TOKEN from .env
+class GitHubScaffolderTool(BaseTool):
+    name: str = "GitHub Repository Scaffolder"
+    description: str = dedent("""
+        This tool creates a new GitHub repository and populates it with a specified
+        directory structure and file content. It is the primary tool for setting up
+        the foundational codebase for a project.
 
-class CreateGitHubRepoTool(BaseTool):
-    name: str = "create_github_repo"  # Add type annotation
-    description: str = "Creates a GitHub repository under the authenticated user's account" # Add type annotation
+        Input to this tool should be a JSON object with two keys:
+        - 'repo_name': The URL-safe name for the new repository.
+        - 'architecture_plan': A string detailing the complete MVP architecture,
+          including the folder structure and content for each file.
+    """)
 
-    def _run(self, repo_name: str, description: str = ""):
-        token = os.getenv("GITHUB_TOKEN")
-        if not token:
-            return "❌ GITHUB_TOKEN not set."
+    def _run(self, **kwargs) -> str:
+        # For Pydantic v1 compatibility with crewAI, we get kwargs
+        repo_name = kwargs.get('repo_name')
+        architecture_plan = kwargs.get('architecture_plan')
 
-        headers = {
-            "Authorization": f"token {token}",
-            "Accept": "application/vnd.github+json"
-        }
-        data = {
-            "name": repo_name,
-            "description": description,
-            "private": False,
-            "auto_init": True
-        }
+        if not repo_name or not architecture_plan:
+            return "Error: 'repo_name' and 'architecture_plan' must be provided in the input."
 
-        response = requests.post("https://api.github.com/user/repos", headers=headers, json=data)
+        try:
+            github_token = os.getenv("GITHUB_TOKEN")
+            if not github_token:
+                return "Error: GITHUB_TOKEN environment variable not set. Please set it to your GitHub personal access token."
 
-        if response.status_code == 201:
-            return f"✅ Repo created: https://github.com/YOUR_USERNAME/{repo_name}"
-        else:
-            return f"❌ Failed to create repo: {response.status_code} - {response.text}"
+            g = Github(github_token)
+            user = g.get_user()
+
+            # Check if repo already exists
+            try:
+                repo = user.get_repo(repo_name)
+                print(f"Repository '{repo_name}' already exists. Skipping creation.")
+            except GithubException as e:
+                if e.status == 404:
+                    # Create the repository if it does not exist
+                    print(f"Creating new repository: {repo_name}")
+                    repo = user.create_repo(
+                        name=repo_name,
+                        description=f"Repository for {repo_name}",
+                        private=False
+                    )
+                else:
+                    raise e
+        except Exception as e:
+            return f"An error occurred: {e}"     

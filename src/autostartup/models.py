@@ -1,16 +1,15 @@
-# src/autostartup/models.py
 from pydantic import BaseModel, Field
 from typing import Literal
 
 class IdeaClassification(BaseModel):
-    classification: Literal["software", "strategic", "vague"] = Field(
-        description="The category of the startup idea"
+    """
+    A model to hold the classification of a startup idea.
+    """
+    classification: Literal['software', 'strategic', 'vague'] = Field(
+        ..., 
+        description="The final classification of the idea."
     )
-    confidence: float = Field(
-        ge=0.0, 
-        le=1.0, 
-        description="Confidence score between 0 and 1"
-    )
-    reasoning: str = Field(
-        description="Brief explanation for the classification"
+    reason: str = Field(
+        ..., 
+        description="A brief justification for why the idea was given this classification."
     )

@@ -3,43 +3,68 @@ classify_idea_task:
   description: >
     Analyze the following startup idea: '{idea}'.
     Based on the description, classify it into ONE of the following three 
-    categories and provide a confidence score:
+    categories and provide a reasoning for your choice:
     - 'software': If the idea is a web application, mobile app, SaaS, or any other code-based product.
     - 'strategic': If the idea is a service, business model innovation, consulting, or physical product.
     - 'vague': If the idea is unclear, ambiguous, or lacks enough detail to be classified.
     
     Provide your response as a JSON object with:
     - classification: one of the three categories above
-    - confidence: a score between 0.0 and 1.0 indicating your certainty
     - reasoning: a brief explanation for your classification
   expected_output: >
-    A JSON object with classification, confidence score, and reasoning.
+    A JSON object containing your 'classification' and a brief 'reason' for your choice.
+    For example:
+    {
+      "classification": "software",
+      "reason": "The idea describes building a mobile application for tracking personal carbon footprints, which is a software product."
+    }
   agent: orchestrator  
   output_file: 'outputs/idea_classification.md'
 
+
+orchestrate_next_steps_task:
+  description: >
+    Analyze the provided 'IdeaClassification' Pydantic object.
+    Based on the 'classification' field, choose the most appropriate tool
+    to proceed with the startup idea:
+    - If classification is 'software' use 'Trigger Software Workflow'.
+    - If classification is 'strategic'  use 'Trigger Strategic Workflow'.
+    - If classification is 'vague' use 'Handle Vague Idea'.
+    - If competitive analysis is not suitable (e.g., for very niche strategic ideas), use 'Bypass Competitive Analysis'.
+
+    Provide a brief summary of the decision made by the tool.
+  expected_output: >
+    A confirmation message from the tool indicating the next steps (e.g., "Initiating software workflow...", "Idea 'X' is vague...", "Competitive analysis bypassed...").
+  agent: orchestrator
+  context:
+    - classify_idea_task 
+
 competitive_analysis_task:
   description: >
-    Analyze the provided startup idea: '{idea}'.
+    You have been provided with a startup idea: '{idea}'.
     Your primary goal is to conduct a detailed competitive analysis.
-    Identify the top 3-5 direct and indirect competitors.
+    IMPORTANT: If the context or previous tool usage indicates this is not a 'software' or 'strategic' idea,
+    or that competitive analysis is to be bypassed, state that explicitly and do not proceed with the analysis.
+    Otherwise, identify the top 3-5 direct and indirect competitors.
     For each competitor, provide a brief summary of their product, 
     their main strengths, and weaknesses.
 
     Your final output must be a concise report summarizing the 
-    competitive landscape.
+    competitive landscape or a clear statement of bypass.
   expected_output: >
     A report with a section for each competitor, including their
-    summary, strengths, and weaknesses.
+    summary, strengths, and weaknesses, or a statement indicating bypass.
   agent: market_analyst  
   context:
-    - classify_idea_task
+    - classify_idea_task # Provide original classification for context
+    - orchestrate_next_steps_task # Provide the orchestrator's decision for context
   output_file: 'outputs/competitive_analysis.md'
 
 propose_mvp_architecture_task:
   description: >
     Based on the startup idea: '{idea}' and the competitive analysis,
     design a detailed technical architecture for the Minimum Viable Product (MVP).
-
+    
     Your plan MUST include:
     1.  A recommended tech stack (e.g., Frontend: React, Backend: Node.js/Express, Database: PostgreSQL).
     2.  A detailed, hierarchical folder structure for the code repository.
@@ -49,10 +74,12 @@ propose_mvp_architecture_task:
     stack you chose, and setup instructions.
   expected_output: >
     A string containing a detailed technical plan, including the chosen tech stack, 
-    the complete folder structure, and the full content for the README.md file.
+    the complete folder structure, and the full content for the README.md file, OR
+    a statement that the task is not applicable.
   agent: mvp_architect
   context:
-    - competitive_analysis_task
+    - competitive_analysis_task  
+  output_file: 'outputs/mvp_architecture.md' 
 
 scaffold_github_repo_task:
   description: >
@@ -62,10 +89,10 @@ scaffold_github_repo_task:
     You MUST perform the following actions using your tools:
     1.  Create a new public GitHub repository with the generated name.
     2.  Use the folder structure from the plan to create all necessary directories.
-    3.  Create the README.md file in the root of the repository with the content from the plan.
+    3.  Create the README.md file in the root of the repository with the content from the proposed plan.
   expected_output: >
-    The URL of the newly created GitHub repository.
+    The URL of the newly created GitHub repository, or a statement that the task is not applicable.
   agent: mvp_architect
-  output_file: 'reports/github_repository.md'
+  output_file: 'outputs/github_repository.md'
   context:
-    - propose_mvp_architecture_task
+    - propose_mvp_architecture_task 

@@ -1,1 +1,1 @@
-{"classification":"software","confidence":1.0,"reasoning":"The idea is explicitly described as 'A mobile app'. A mobile application is a tangible software product, making the classification straightforward and the confidence level maximum."}
+{"classification":"software","reason":"The idea explicitly describes building a 'mobile app', which is a code-based product falling under the 'software' category."}
