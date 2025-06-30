@@ -68,7 +68,8 @@ class Autostartup():
         manager = Agent(
             config=self.agents_config['manager'],
             allow_delegation=True,
-            verbose=True
+            verbose=True,
+            tools=[]
         )
         
         return Crew(

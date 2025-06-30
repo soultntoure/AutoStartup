@@ -1,1 +1,1 @@
-https://github.com/soultntoure/smart-schedule-optimizer
+https://github.com/soultntoure/dine-diverse
