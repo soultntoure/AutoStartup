@@ -77,5 +77,4 @@ class Autostartup():
             process=Process.hierarchical,
             verbose=True,
             manager_agent=manager,
-            
         )

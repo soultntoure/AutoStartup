@@ -29,14 +29,17 @@ gap_finding_task:
 
 technical_planning_and_scaffolding_task:
   description: >
-   Design a comprehensive technical blueprint and structure it into a single,
-    machine-readable JSON object for automated repository creation.
-    
-    1.  Recommend a technology stack (frontend, backend, database).
-    2.  Design a detailed, hierarchical folder and file structure.
-    3.  Place the human-readable plan (tech stack, reasoning, structure) as the
-        content for a `README.md` file.
-    4.  Combine all of this into the final JSON object.
+    Leverage the user-provided startup idea "{idea}" and the detailed market gap analysis from the context to 
+    design a technical blueprint that directly addresses and solves the problems outlined in the gap analysis.
+    1.  Recommend a technology stack (frontend, backend, database, etc.) that is
+      specifically chosen to build a competitive advantage based on the identified gap.
+    2.  Design a detailed, hierarchical folder and file structure for the project.
+    3.  Draft a comprehensive `README.md`. The README is critical and must explain:
+      - The project's purpose.
+      - Justification for the chosen tech stack, detailing HOW each choice helps 
+        exploit the market gap.
+      - An overview of the project's structure.
+    4.  Finally, encapsulate this entire plan into a single, machine-readable JSON object.
   expected_output: >
     A single, clean JSON object and NOTHING ELSE. Do not include any introductory text,
     explanations, or markdown code block formatting around the JSON.
@@ -49,7 +52,6 @@ technical_planning_and_scaffolding_task:
   agent: technical_architect
   context:
     - gap_finding_task
-  output_file: 'outputs/scaffolding_plan.json'
 
 scaffold_github_repo_task:
   description: >

@@ -1,1 +1,1 @@
-https://github.com/soultntoure/lullaby-tales-app
+https://github.com/soultntoure/smart-schedule-optimizer

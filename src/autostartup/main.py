@@ -18,7 +18,7 @@ def run():
     Run the crew.
     """
     inputs = {
-        'idea': ' An app that makes parents life easier by creating personalized bedtime stories for children.',
+        'idea': ' An app that helps users find the best local restaurants based on their preferences and dietary restrictions.',
     }
     
     try:
