@@ -3,17 +3,9 @@ from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai.tasks.task_output import TaskOutput
 from crewai_tools import SerperDevTool
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-
 from .tools.github_tools import GitHubScaffolderTool
-# Updated import for the new tool objects
-from .tools.orchestrator_tools import (
-    trigger_software_workflow_tool,
-    trigger_strategic_workflow_tool,
-    handle_vague_idea_tool,
-    bypass_competitive_analysis_tool
-)
-from .models import IdeaClassification
 
 load_dotenv()
 
@@ -22,75 +14,44 @@ class Autostartup():
     """Autostartup crew"""
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
-
     search_tool = SerperDevTool()
 
-    @agent
-    def orchestrator(self) -> Agent:
-        return Agent(
-            config=self.agents_config['orchestrator'],
-            # Pass the imported Tool objects directly
-            tools=[
-                trigger_software_workflow_tool,
-                trigger_strategic_workflow_tool,
-                handle_vague_idea_tool,
-                bypass_competitive_analysis_tool
-            ],
-            verbose=True
-        )
 
     @agent
     def market_researcher(self) -> Agent:
-        return Agent(
-            config=self.agents_config['market_researcher'],
-            tools=[self.search_tool],
-            verbose=True
-        )
-        
+        return Agent(config=self.agents_config['market_researcher'],tools=[self.search_tool], verbose=True)
+    
+    
     @agent
-    def mvp_architect(self) -> Agent:
-        return Agent(
-            config=self.agents_config['mvp_architect'],
-            verbose=True
-        )
+    def gap_finder(self) -> Agent:
+        return Agent(config=self.agents_config['gap_finder'], verbose=True)
+
+    @agent
+    def technical_architect(self) -> Agent:
+        return Agent(config=self.agents_config['technical_architect'], verbose=True)
         
     @agent
     def github_builder(self) -> Agent:
         return Agent(
-            config=self.agents_config['github_builder'],
-            tools=[GitHubScaffolderTool()],
-            verbose=True
-        )    
+            config=self.agents_config['github_builder'],tools=[GitHubScaffolderTool()],verbose=True)    
 
+ 
     @task
-    def classify_idea_task(self) -> Task:
+    def competitor_analysis_task(self) -> Task:
         return Task(
-            config=self.tasks_config['classify_idea_task'],
-            output_pydantic=IdeaClassification
-        )
-    
-    @task
-    def orchestrate_next_steps_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['orchestrate_next_steps_task'],
-        )
-
-    @task
-    def competitive_analysis_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['competitive_analysis_task'],
+            config=self.tasks_config['competitor_analysis_task'],
         )
         
     @task
-    def propose_mvp_architecture_task(self) -> Task:
+    def gap_finding_task(self) -> Task:
         return Task(
-            config=self.tasks_config['propose_mvp_architecture_task'],
+            config=self.tasks_config['gap_finding_task'],
         )
 
     @task
-    def extract_scaffolding_plan_task(self) -> Task:
+    def technical_planning_and_scaffolding_task(self) -> Task:
         return Task(
-            config=self.tasks_config['extract_scaffolding_plan_task'],
+            config=self.tasks_config['technical_planning_and_scaffolding_task'],
         )
     
     
@@ -103,17 +64,17 @@ class Autostartup():
     @crew
     def crew(self) -> Crew:
         """Creates the Autostartup crew"""
+        
+        manager = Agent(
+            config=self.agents_config['manager'],
+            allow_delegation=True,
+            verbose=True
+        )
+        
         return Crew(
             agents=self.agents,
-            tasks=[
-                self.classify_idea_task(),
-                self.orchestrate_next_steps_task(),
-                # These tasks would be part of sub-workflows triggered based on the orchestrator
-                self.competitive_analysis_task(), 
-                self.propose_mvp_architecture_task(),
-                self.extract_scaffolding_plan_task(),
-                self.scaffold_github_repo_task()
-            ],
-            process=Process.sequential,
-            verbose=True
+            tasks=self.tasks, 
+            process=Process.hierarchical,
+            verbose=True,
+            manager_agent=manager,
         )

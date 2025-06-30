@@ -1,1 +1,1 @@
-https://github.com/soultntoure/resumate-ai
+https://github.com/soultntoure/book-reading-tracker

@@ -18,7 +18,7 @@ def run():
     Run the crew.
     """
     inputs = {
-        'idea': ' A resume creator platform where students or those looking for jobs can get templates of ready resumes and create their own resume.',
+        'idea': ' An app that makes parents life easier by creating personalized bedtime stories for children.',
     }
     
     try:

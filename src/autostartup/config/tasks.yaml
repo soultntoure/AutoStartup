@@ -1,134 +1,234 @@
 # src/autostartup/config/tasks.yaml
-classify_idea_task:
+competitor_analysis_task:
   description: >
-    Analyze the following startup idea: '{idea}'.
-    Based on the description, classify it into ONE of the following three 
-    categories and provide a reasoning for your choice:
-    - 'software': If the idea is a web application, mobile app, SaaS, or any other code-based product.
-    - 'strategic': If the idea is a service, business model innovation, consulting, or physical product.
-    - 'vague': If the idea is unclear, ambiguous, or lacks enough detail to be classified.
-    
-    Provide your response as a JSON object with:
-    - classification: one of the three categories above
-    - reasoning: a brief explanation for your classification
+    Conduct in-depth market research on the user-provided startup idea: "{idea}".
+    Identify 2-3 direct competitors. For each competitor, create a detailed
+    analysis of their strengths and weaknesses. Compile your findings into a
+    comprehensive report.
   expected_output: >
-    A JSON object containing your 'classification' and a brief 'reason' for your choice.
-    For example:
-    {
-      "classification": "software",
-      "reason": "The idea describes building a mobile application for tracking personal carbon footprints, which is a software product."
-    }
-  agent: orchestrator  
-  output_file: 'outputs/idea_classification.md'
-
-
-orchestrate_next_steps_task:
-  description: >
-    Analyze the provided 'IdeaClassification' Pydantic object.
-    Based on the 'classification' field, choose the most appropriate tool
-    to proceed with the startup idea:
-    - If classification is 'software' use 'Trigger Software Workflow'.
-    - If classification is 'strategic'  use 'Trigger Strategic Workflow'.
-    - If classification is 'vague' use 'Handle Vague Idea'.
-    - If competitive analysis is not suitable (e.g., for very niche strategic ideas), use 'Bypass Competitive Analysis'.
-
-    Provide a brief summary of the decision made by the tool.
-  expected_output: >
-    A confirmation message from the tool indicating the next steps (e.g., "Initiating software workflow...", "Idea 'X' is vague...", "Competitive analysis bypassed...").
-  agent: orchestrator
-  context:
-    - classify_idea_task 
-
-competitive_analysis_task:
-  description: >
-    You have been provided with a startup idea: '{idea}'.
-    Your primary goal is to conduct a detailed competitive analysis.
-    Identify the top 3-5 direct and indirect competitors.
-    For each competitor, provide a brief summary of their product, 
-    their main strengths, and weaknesses.
-
-    Your final output must be a concise report summarizing the 
-    competitive landscape and defining a gap where all these competitors miss.
-  
-  expected_output: >
-    A report with a section for each competitor, including their
-    summary, strengths, and weaknesses, or a statement indicating bypass.
-  agent: market_researcher  
+    A detailed markdown report that lists 2-3 direct competitors.
+    For each competitor, the report must include a section for their 
+    percieved strengths, and another on weaknesses.
+  agent: market_researcher
   output_file: 'outputs/competitive_analysis.md'
 
-
-propose_mvp_architecture_task:
+gap_finding_task:
   description: >
-    Based on the startup idea: '{idea}' and the competitive analysis,
-    design a detailed technical architecture for the Minimum Viable Product (MVP).
+    Analyze the competitor report for "{idea}" to identify a strategic gap in the market.
+    Based on the identified strengths and weaknesses of the competitors, pinpoint
+    unmet customer needs or opportunities that the new startup can exploit.
+    Your analysis should form the core value proposition for the new startup.
+  expected_output: >
+    A concise report that clearly articulates the identified market gap or
+    unmet need. It should explain how a new startup could position itself
+    to fill this gap, effectively creating its unique selling proposition.
+  agent: gap_finder
+  context:
+    - competitor_analysis_task
+  output_file: 'outputs/gap_analysis.md'
+
+technical_planning_and_scaffolding_task:
+  description: >
+   Design a comprehensive technical blueprint and structure it into a single,
+    machine-readable JSON object for automated repository creation.
     
-    Your plan MUST include:
-    1.  A recommended tech stack for the project.
-    2.  A detailed, hierarchical folder structure for the code repository.
-    3.  A complete, well-written README.md file content in Markdown format.
-
-    The README should include a project title, a brief description, the tech
-    stack you chose, and setup instructions.
+    1.  Recommend a technology stack (frontend, backend, database).
+    2.  Design a detailed, hierarchical folder and file structure.
+    3.  Place the human-readable plan (tech stack, reasoning, structure) as the
+        content for a `README.md` file.
+    4.  Combine all of this into the final JSON object.
   expected_output: >
-    A string containing a detailed technical plan, including the chosen tech stack, 
-    the complete folder structure, and the full content for the README.md file, OR
-    a statement that the task is not applicable.
-  agent: mvp_architect
+    A single, clean JSON object and NOTHING ELSE. Do not include any introductory text,
+    explanations, or markdown code block formatting around the JSON.
+    The JSON object MUST have three top-level keys: 'repo_name', 'description', and 'files'.
+    - 'repo_name' should be a suitable, slug-cased name for the project.
+    - 'description' should be a brief, one-sentence project description.
+    - 'files' must be a list of objects, where each object has a 'path' (e.g., "src/main.py")
+      and 'content' (initial placeholder code or text).
+    - One of the files MUST be a 'README.md' containing the detailed technical plan.
+  agent: technical_architect
   context:
-    - competitive_analysis_task  
-  output_file: 'outputs/mvp_architecture.md' 
-
-
-extract_scaffolding_plan_task:
-  description: >
-    Read the detailed technical plan provided in the context. Your sole purpose is to act
-    as a data converter, transforming the human-readable markdown plan into a structured JSON object.
-
-    You must perform the following steps:
-    1. Generate a catchy, URL_safe version repository name of the startup idea: '{idea}
-    2. Generate a concise, one-sentence repository description from the idea.
-    3. Parse the hierarchical folder structure to identify every single file path.
-    4. Extract the full content for the 'README.md' file.
-    5. For ALL other files, generate high-quality boilerplate content based on the tech stack in the plan.
-
-  expected_output: >
-    A single, clean JSON object containing 'repo_name', 'description', and 'files' keys.
-    The 'files' key must contain a list of objects, each with 'path' and 'content'.
-    The final output MUST be only the JSON object and nothing else.
-
-    Example:
-    {
-      "repo_name": "campus-gigs-student-finder", # <-- Fixed JSON syntax
-      "description": "A mobile application designed to connect university students with flexible, part-time gigs.", # <-- Fixed JSON syntax
-      "files": [
-        {
-          "path": ".gitignore",
-          "content": "# Dependencies\n/node_modules\n\n# Production\n/build\n\n# Env\n.env\n.env.local"
-        },
-        {
-          "path": "README.md",
-          "content": "# CampusGigs - Student Job Finder\n\nA mobile application designed to connect university students with flexible, part-time gigs near their campus..."
-        },
-        {
-          "path": "packages/app/src/components/Button.tsx",
-          "content": "import React from 'react';\nimport {{ TouchableOpacity, Text, StyleSheet }} from 'react-native';\n\ninterface ButtonProps {{\n  title: string;\n  onPress: () => void;\n}}\n\nconst Button: React.FC<ButtonProps> = ({{ title, onPress }}) => {{\n  return (\n    <TouchableOpacity style={{styles.button}} onPress={{    onPress    }}>\n      <Text style={{   styles.text   }}>{{  title  }}</Text>\n    </TouchableOpacity>\n  );\n}};\n\nconst styles = StyleSheet.create({{\n  button: {{\n    backgroundColor: '#007bff',\n    padding: 10,\n    borderRadius: 5,\n    alignItems: 'center',\n  }},\n  text: {{\n    color: '#ffffff',\n    fontSize: 16,\n  }},\n}});\n\nexport default Button;"
-        }
-      ]
-    }
-  agent: mvp_architect
-  context:
-    - propose_mvp_architecture_task
+    - gap_finding_task
   output_file: 'outputs/scaffolding_plan.json'
-  
 
 scaffold_github_repo_task:
   description: >
-    Your only job is to execute the GitHub Repository Scaffolder tool.
-    The context from the previous step is a complete JSON object.
+    Execute the GitHub Repository Scaffolder tool using the JSON plan from the
+    previous task.
     You MUST pass this entire JSON object, unmodified, as the arguments to the tool.
   expected_output: >
     The full URL of the successfully created and populated GitHub repository.
   agent: github_builder
-  output_file: 'outputs/github_repo_url.md'
   context:
-    - extract_scaffolding_plan_task
+    - technical_planning_and_scaffolding_task
+  output_file: 'outputs/github_repo_url.md'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# classify_idea_task:
+#   description: >
+#     Analyze the following startup idea: '{idea}'.
+#     Based on the description, classify it into ONE of the following three 
+#     categories and provide a reasoning for your choice:
+#     - 'software': If the idea is a web application, mobile app, SaaS, or any other code-based product.
+#     - 'strategic': If the idea is a service, business model innovation, consulting, or physical product.
+#     - 'vague': If the idea is unclear, ambiguous, or lacks enough detail to be classified.
+    
+#     Provide your response as a JSON object with:
+#     - classification: one of the three categories above
+#     - reasoning: a brief explanation for your classification
+#   expected_output: >
+#     A JSON object containing your 'classification' and a brief 'reason' for your choice.
+#     For example:
+#     {
+#       "classification": "software",
+#       "reason": "The idea describes building a mobile application for tracking personal carbon footprints, which is a software product."
+#     }
+#   agent: orchestrator  
+#   output_file: 'outputs/idea_classification.md'
+
+
+# orchestrate_next_steps_task:
+#   description: >
+#     Analyze the provided 'IdeaClassification' Pydantic object.
+#     Based on the 'classification' field, choose the most appropriate tool
+#     to proceed with the startup idea:
+#     - If classification is 'software' use 'Trigger Software Workflow'.
+#     - If classification is 'strategic'  use 'Trigger Strategic Workflow'.
+#     - If classification is 'vague' use 'Handle Vague Idea'.
+#     - If competitive analysis is not suitable (e.g., for very niche strategic ideas), use 'Bypass Competitive Analysis'.
+
+#     Provide a brief summary of the decision made by the tool.
+#   expected_output: >
+#     A confirmation message from the tool indicating the next steps (e.g., "Initiating software workflow...", "Idea 'X' is vague...", "Competitive analysis bypassed...").
+#   agent: orchestrator
+#   context:
+#     - classify_idea_task 
+
+# competitive_analysis_task:
+#   description: >
+#     You have been provided with a startup idea: '{idea}'.
+#     Your primary goal is to conduct a detailed competitive analysis.
+#     Identify the top 3-5 direct and indirect competitors.
+#     For each competitor, provide a brief summary of their product, 
+#     their main strengths, and weaknesses.
+
+#     Your final output must be a concise report summarizing the 
+#     competitive landscape and defining a gap where all these competitors miss.
+  
+#   expected_output: >
+#     A report with a section for each competitor, including their
+#     summary, strengths, and weaknesses, or a statement indicating bypass.
+#   agent: market_researcher  
+#   output_file: 'outputs/competitive_analysis.md'
+
+
+# propose_mvp_architecture_task:
+#   description: >
+#     Based on the startup idea: '{idea}' and the competitive analysis,
+#     design a detailed technical architecture for the Minimum Viable Product (MVP).
+    
+#     Your plan MUST include:
+#     1.  A recommended tech stack for the project.
+#     2.  A detailed, hierarchical folder structure for the code repository.
+#     3.  A complete, well-written README.md file content in Markdown format.
+
+#     The README should include a project title, a brief description, the tech
+#     stack you chose, and setup instructions.
+#   expected_output: >
+#     A string containing a detailed technical plan, including the chosen tech stack, 
+#     the complete folder structure, and the full content for the README.md file, OR
+#     a statement that the task is not applicable.
+#   agent: mvp_architect
+#   context:
+#     - competitive_analysis_task  
+#   output_file: 'outputs/mvp_architecture.md' 
+
+
+# extract_scaffolding_plan_task:
+#   description: >
+#     Read the detailed technical plan provided in the context. Your sole purpose is to act
+#     as a data converter, transforming the human-readable markdown plan into a structured JSON object.
+
+#     You must perform the following steps:
+#     1. Generate a catchy, URL_safe version repository name of the startup idea: '{idea}
+#     2. Generate a concise, one-sentence repository description from the idea.
+#     3. Parse the hierarchical folder structure to identify every single file path.
+#     4. Extract the full content for the 'README.md' file.
+#     5. For ALL other files, generate high-quality boilerplate content based on the tech stack in the plan.
+
+#   expected_output: >
+#     A single, clean JSON object containing 'repo_name', 'description', and 'files' keys.
+#     The 'files' key must contain a list of objects, each with 'path' and 'content'.
+#     The final output MUST be only the JSON object and nothing else.
+
+#     Example:
+#     {
+#       "repo_name": "campus-gigs-student-finder", # <-- Fixed JSON syntax
+#       "description": "A mobile application designed to connect university students with flexible, part-time gigs.", # <-- Fixed JSON syntax
+#       "files": [
+#         {
+#           "path": ".gitignore",
+#           "content": "# Dependencies\n/node_modules\n\n# Production\n/build\n\n# Env\n.env\n.env.local"
+#         },
+#         {
+#           "path": "README.md",
+#           "content": "# CampusGigs - Student Job Finder\n\nA mobile application designed to connect university students with flexible, part-time gigs near their campus..."
+#         },
+#         {
+#           "path": "packages/app/src/components/Button.tsx",
+#           "content": "import React from 'react';\nimport {{ TouchableOpacity, Text, StyleSheet }} from 'react-native';\n\ninterface ButtonProps {{\n  title: string;\n  onPress: () => void;\n}}\n\nconst Button: React.FC<ButtonProps> = ({{ title, onPress }}) => {{\n  return (\n    <TouchableOpacity style={{styles.button}} onPress={{    onPress    }}>\n      <Text style={{   styles.text   }}>{{  title  }}</Text>\n    </TouchableOpacity>\n  );\n}};\n\nconst styles = StyleSheet.create({{\n  button: {{\n    backgroundColor: '#007bff',\n    padding: 10,\n    borderRadius: 5,\n    alignItems: 'center',\n  }},\n  text: {{\n    color: '#ffffff',\n    fontSize: 16,\n  }},\n}});\n\nexport default Button;"
+#         }
+#       ]
+#     }
+#   agent: mvp_architect
+#   context:
+#     - propose_mvp_architecture_task
+#   output_file: 'outputs/scaffolding_plan.json'
+  
+
+# scaffold_github_repo_task:
+#   description: >
+#     Your only job is to execute the GitHub Repository Scaffolder tool.
+#     The context from the previous step is a complete JSON object.
+#     You MUST pass this entire JSON object, unmodified, as the arguments to the tool.
+#   expected_output: >
+#     The full URL of the successfully created and populated GitHub repository.
+#   agent: github_builder
+#   output_file: 'outputs/github_repo_url.md'
+#   context:
+#     - extract_scaffolding_plan_task
