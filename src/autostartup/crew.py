@@ -1,13 +1,36 @@
 # src/autostartup/crew.py
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai.tasks.task_output import TaskOutput
 from crewai_tools import SerperDevTool
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from .tools.github_tools import GitHubScaffolderTool
 
+
 load_dotenv()
+
+# class CompetitorAnalysisOutput(BaseModel):
+#     competitors: list[str] = Field(..., description="List of competitor names")
+#     summary: str = Field(..., description="Summary of competitor analysis")
+#     insights: list[str] = Field(..., description="Key insights from competitor analysis")
+
+
+# class GapFindingOutput(BaseModel):
+#     gaps: list[str] = Field(..., description="List of identified market/product gaps")
+#     rationale: str = Field(..., description="Explanation of why these are gaps")
+#     recommendations: list[str] = Field(..., description="Recommendations for addressing gaps")
+
+
+# class TechnicalPlanningOutput(BaseModel):
+#     architecture: str = Field(..., description="Proposed technical architecture")
+#     tech_stack: list[str] = Field(..., description="List of technologies to be used")
+#     implementation_plan: str = Field(..., description="Step-by-step implementation plan")
+
+
+# class GitHubScaffoldOutput(BaseModel):
+#     repo_url: str = Field(..., description="URL of the created GitHub repository")
+#     files_created: list[str] = Field(..., description="List of files/folders scaffolded")
+#     instructions: str = Field(..., description="Instructions for using the scaffolded repo")
 
 @CrewBase
 class Autostartup():
