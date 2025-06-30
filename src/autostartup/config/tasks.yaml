@@ -43,22 +43,17 @@ competitive_analysis_task:
   description: >
     You have been provided with a startup idea: '{idea}'.
     Your primary goal is to conduct a detailed competitive analysis.
-    IMPORTANT: If the context or previous tool usage indicates this is not a 'software' or 'strategic' idea,
-    or that competitive analysis is to be bypassed, state that explicitly and do not proceed with the analysis.
-    Otherwise, identify the top 3-5 direct and indirect competitors.
+    Identify the top 3-5 direct and indirect competitors.
     For each competitor, provide a brief summary of their product, 
     their main strengths, and weaknesses.
 
     Your final output must be a concise report summarizing the 
-    competitive landscape or a clear statement of bypass.
+    competitive landscape and defining a gap where all these competitors miss.
   
   expected_output: >
     A report with a section for each competitor, including their
     summary, strengths, and weaknesses, or a statement indicating bypass.
-  agent: market_analyst  
-  context:
-    - classify_idea_task # Provide original classification for context
-    - orchestrate_next_steps_task # Provide the orchestrator's decision for context
+  agent: market_researcher  
   output_file: 'outputs/competitive_analysis.md'
 
 
@@ -133,7 +128,7 @@ scaffold_github_repo_task:
     You MUST pass this entire JSON object, unmodified, as the arguments to the tool.
   expected_output: >
     The full URL of the successfully created and populated GitHub repository.
-  agent: mvp_architect
+  agent: github_builder
   output_file: 'outputs/github_repo_url.md'
   context:
     - extract_scaffolding_plan_task

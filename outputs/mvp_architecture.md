@@ -1,186 +1,235 @@
-### **MVP Technical Architecture: Campus Gigs**
+```
+# Resumate AI: Smart Resume Builder
 
-Here is the detailed technical blueprint for the "Campus Gigs" mobile application MVP.
+## Project Description
 
----
+Resumate AI is an innovative, user-friendly resume creation platform designed to empower students and job seekers to effortlessly craft professional and impactful resumes. Leveraging a robust backend and a highly interactive frontend, the platform provides a rich selection of ready-to-use, customizable templates. Users can easily input their information, select a template, and generate high-quality PDF resumes, streamlining the job application process. This MVP focuses on core functionalities: user authentication, template browsing, resume data input, and PDF generation.
 
-### **1. Recommended Tech Stack**
+## Technical Stack
 
-The architecture is designed as a TypeScript monorepo to maximize code sharing and streamline development between the mobile app and backend.
+The Resumate AI platform is built with a modern, scalable, and highly performant technical stack, ensuring a robust and maintainable application.
 
-*   **Monorepo Management:** **pnpm Workspaces** - Efficiently manages dependencies across multiple projects.
-*   **Mobile Application (Frontend):**
-    *   **Framework:** **React Native** with **Expo** - Allows for rapid development and deployment to both iOS and Android from a single codebase. Expo provides a robust ecosystem of tools and pre-built modules.
-    *   **Routing:** **Expo Router** - A file-based routing system that simplifies navigation and deep linking.
-    *   **State Management:** React Context API (for MVP), Zustand (for scalability).
-*   **Backend:**
-    *   **Framework:** **NestJS** - A progressive Node.js framework using TypeScript, built on top of Express.js. It provides a structured, modular architecture perfect for scalable applications.
-    *   **Database:** **PostgreSQL** - A powerful, open-source object-relational database system known for its reliability and feature robustness.
-    *   **ORM (Object-Relational Mapping):** **Prisma** - A next-generation ORM for Node.js and TypeScript that simplifies database access with a type-safe client.
-    *   **Authentication:** **JWT (JSON Web Tokens)** implemented using Passport.js for securing API endpoints.
-*   **Development & Deployment:**
-    *   **Containerization:** **Docker** - To create consistent development and production environments for the backend and database.
+**Frontend:**
+*   **Framework:** Next.js 14+ (React) - Utilizes the App Router for server-side rendering (SSR), static site generation (SSG), and enhanced performance, alongside a file-system based routing.
+*   **Language:** TypeScript - For strong typing, improved code quality, and better developer experience.
+*   **Styling:** Tailwind CSS - A utility-first CSS framework for rapidly building custom designs directly in HTML.
+*   **UI Components:** Shadcn/UI (optional, but recommended for reusable, accessible components).
+*   **Data Fetching:** TanStack Query (React Query) - For efficient data fetching, caching, and synchronization with the server.
+*   **Form Management:** React Hook Form with Zod - For performant and validated form handling.
 
----
+**Backend:**
+*   **Framework:** NestJS (Node.js) - A progressive Node.js framework for building efficient, reliable, and scalable server-side applications, leveraging TypeScript and inspired by Angular.
+*   **Language:** TypeScript.
+*   **ORM:** Prisma - A modern, type-safe ORM for database access, schema migrations, and database introspection.
+*   **Database:** PostgreSQL - A powerful, open-source relational database known for its reliability, feature robustness, and performance.
+*   **Authentication:** JWT-based authentication integrated with Passport.js strategies, potentially leveraging AWS Cognito User Pools for user management.
+*   **PDF Generation:** Puppeteer - A Node.js library that provides a high-level API to control headless Chrome or Chromium, enabling the conversion of dynamic HTML templates into high-quality PDF documents.
 
-### **2. Repository Folder Structure**
+**Cloud Infrastructure (AWS):**
+*   **Cloud Provider:** Amazon Web Services (AWS)
+*   **Compute:** AWS ECS Fargate - Serverless compute for containers, abstracting away infrastructure management.
+*   **Database Service:** AWS RDS for PostgreSQL - Managed relational database service.
+*   **Object Storage:** AWS S3 - Scalable storage for generated PDF resumes, user avatars, and template assets.
+*   **Content Delivery Network (CDN):** AWS CloudFront - Delivers frontend assets with low latency and high transfer speeds.
+*   **Identity & Access Management:** AWS Cognito - Managed user directory service for authentication (User Pools) and authorization (Identity Pools).
+*   **Infrastructure as Code (IaC):** Terraform - Defines and provisions the entire cloud infrastructure programmatically, ensuring consistency and repeatability.
 
-The repository will be a `pnpm` monorepo. Here is the detailed hierarchical structure:
+**Development & Operations:**
+*   **Version Control:** Git / GitHub
+*   **CI/CD:** GitHub Actions - For automated build, test, and deployment pipelines.
+*   **Containerization:** Docker - For consistent development and deployment environments.
+*   **Monorepo Management:** Yarn Workspaces - To manage multiple interdependent packages (frontend, backend, shared types, etc.) within a single repository.
+*   **Local Development Orchestration:** Docker Compose - For setting up and running local development services (database, local S3, etc.).
+
+## Detailed, Hierarchical Folder Structure
 
 ```
-campus-gigs/
-├── .github/                      # GitHub-specific files
+resumate-ai/
+├── .github/
 │   └── workflows/
-│       └── ci.yml                # Continuous Integration workflow
-│   └── PULL_REQUEST_TEMPLATE.md
-├── apps/                         # Contains runnable applications
-│   ├── mobile/                   # React Native (Expo) mobile app
-│   │   ├── app/                  # Expo Router file-based routes
-│   │   │   ├── (tabs)/           # Directory for tab-based navigation
-│   │   │   │   ├── _layout.tsx   # Tab navigator layout
-│   │   │   │   ├── index.tsx     # Gig feed screen
-│   │   │   │   ├── map.tsx       # Map view screen
-│   │   │   │   └── profile.tsx   # User profile screen
-│   │   │   └── _layout.tsx       # Root stack layout
-│   │   ├── assets/               # Static assets (images, fonts)
-│   │   ├── components/           # Reusable React components
-│   │   │   └── common/           # General-purpose components (buttons, inputs)
-│   │   ├── constants/            # App-wide constants (colors, styles)
-│   │   ├── hooks/                # Custom React hooks
-│   │   ├── services/             # API services, utility functions
-│   │   │   └── api.ts            # Central API client
-│   │   ├── app.json              # Expo configuration file
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   └── server/                   # NestJS backend application
-│       ├── prisma/
-│       │   └── schema.prisma     # Prisma schema for database models
+│       ├── backend-deploy.yml    # GitHub Actions workflow for backend deployment
+│       └── frontend-deploy.yml   # GitHub Actions workflow for frontend deployment
+├── apps/
+│   ├── api/                      # NestJS Backend Application
+│   │   ├── src/
+│   │   │   ├── auth/             # Authentication module (JWT, Passport strategies)
+│   │   │   ├── users/            # User management module (CRUD)
+│   │   │   ├── templates/        # Resume template management module (CRUD)
+│   │   │   ├── resumes/          # Resume generation & management module
+│   │   │   ├── files/            # File upload/download module (S3 integration)
+│   │   │   ├── pdf-generator/    # PDF generation service/module (Puppeteer integration)
+│   │   │   ├── config/           # Application configuration
+│   │   │   ├── main.ts           # Application entry point
+│   │   │   └── app.module.ts     # Root module
+│   │   ├── Dockerfile            # Dockerfile for backend service
+│   │   ├── nest-cli.json         # NestJS CLI configuration
+│   │   ├── package.json          # Node.js dependencies for backend
+│   │   └── tsconfig.json         # TypeScript configuration for backend
+│   └── web/                      # Next.js Frontend Application
+│       ├── public/               # Static assets (images, fonts, etc.)
 │       ├── src/
-│       │   ├── auth/             # Authentication module (login, signup)
-│       │   ├── gigs/             # Gigs module (CRUD for gigs)
-│       │   ├── users/            # Users module (user profiles)
-│       │   ├── app.controller.ts # Root controller
-│       │   ├── app.module.ts     # Root module
-│       │   └── main.ts           # Application entry point
-│       ├── test/                 # End-to-end and unit tests
-│       ├── Dockerfile
-│       ├── package.json
-│       └── tsconfig.json
-│
-├── packages/                     # Shared code and utilities
-│   └── types/                    # Shared TypeScript types/interfaces
-│       ├── src/
-│       │   ├── index.ts
-│       │   ├── gig.ts
-│       │   └── user.ts
-│       └── package.json
-│
-├── .dockerignore
-├── .editorconfig
+│       │   ├── app/              # Next.js App Router structure
+│       │   │   ├── (auth)/       # Group for authentication routes (login, register)
+│       │   │   │   ├── login/
+│       │   │   │   └── register/
+│       │   │   ├── (main)/       # Group for main application routes
+│       │   │   │   ├── dashboard/
+│       │   │   │   ├── templates/
+│       │   │   │   ├── resume/[id]/
+│       │   │   │   └── settings/
+│       │   │   ├── api/          # Route handlers for API routes (if needed, prefer backend API)
+│       │   │   ├── globals.css   # Global styles
+│       │   │   ├── layout.tsx    # Root layout component
+│       │   │   └── page.tsx      # Root page component
+│       │   ├── components/       # Reusable React components (UI library agnostic)
+│       │   │   ├── common/
+│       │   │   └── ui/           # Components built with Shadcn/UI (if used)
+│       │   ├── hooks/            # Custom React hooks
+│       │   ├── lib/              # Client-side utilities, API clients (TanStack Query setup)
+│       │   └── styles/           # Tailwind CSS specific styles / other utility styles
+│       ├── Dockerfile            # Dockerfile for frontend service
+│       ├── next.config.js        # Next.js configuration
+│       ├── package.json          # Node.js dependencies for frontend
+│       ├── postcss.config.js     # PostCSS configuration
+│       ├── tailwind.config.ts    # Tailwind CSS configuration
+│       └── tsconfig.json         # TypeScript configuration for frontend
+├── packages/
+│   ├── config/                   # Shared configuration constants (e.g., environment variables types)
+│   │   └── index.ts
+│   ├── db/                       # Database schema and Prisma client
+│   │   ├── migrations/           # Prisma migrations
+│   │   ├── schema.prisma         # Prisma schema definition
+│   │   └── index.ts              # Prisma client export
+│   ├── ui/                       # Shared UI components (if common across multiple frontends/storybooks)
+│   │   ├── src/
+│   │   │   └── components/
+│   │   └── package.json
+│   └── types/                    # Shared TypeScript interfaces, types, enums (DTOs, models)
+│       └── index.ts
+├── infra/
+│   └── aws/                      # Terraform modules for AWS infrastructure provisioning
+│       ├── vpc.tf                # VPC and networking
+│       ├── ecs.tf                # ECS cluster, services, tasks definitions
+│       ├── rds.tf                # RDS PostgreSQL instance
+│       ├── s3.tf                 # S3 buckets for assets and PDFs
+│       ├── cognito.tf            # Cognito User Pool and Identity Pool
+│       ├── cloudfront.tf         # CloudFront distribution for frontend
+│       ├── iam.tf                # IAM roles and policies
+│       ├── variables.tf          # Input variables for Terraform modules
+│       └── outputs.tf            # Output variables from Terraform modules
+├── docs/
+│   ├── ARCHITECTURE.md           # High-level architecture overview
+│   ├── API.md                    # Backend API documentation (OpenAPI/Swagger)
+│   └── DATABASE_SCHEMA.md        # Database schema diagrams and explanations
+├── scripts/                      # Utility scripts (e.g., local setup, deploy helpers, DB seed)
+│   └── setup-local-dev.sh
 ├── .env.example                  # Example environment variables
-├── .gitignore
-├── docker-compose.yml            # For local development database and server
-├── package.json                  # Root package.json for monorepo scripts
-├── pnpm-workspace.yaml           # Defines the monorepo workspaces
-└── README.md
+├── docker-compose.yml            # Local development environment orchestration
+├── package.json                  # Root package.json for Yarn Workspaces
+├── README.md                     # Project README
+└── tsconfig.json                 # Monorepo base TypeScript configuration
 ```
 
----
+## Setup Instructions
 
-### **3. README.md Content**
-
-```markdown
-# Campus Gigs
-
-**Connecting university students with part-time gigs near campus.**
-
-Campus Gigs is a mobile application designed to bridge the gap between students seeking flexible, local work and businesses looking for temporary, on-demand help.
-
-## ✨ Features (MVP)
-
-*   **Student Accounts:** Simple email/password signup and profile creation.
-*   **Business Accounts:** Post and manage part-time job listings (gigs).
-*   **Gig Feed:** Students can browse a real-time feed of available gigs, sorted by proximity and posting date.
-*   **Map View:** Visualize available gigs on a map centered around the university campus.
-*   **Simple Applications:** Students can apply to gigs with a single tap.
-*   **Application Tracking:** Businesses can view and manage applications for their gigs.
-
-## 🚀 Tech Stack
-
-This project is a TypeScript monorepo managed with `pnpm` workspaces.
-
-*   **Monorepo:** [pnpm Workspaces](https://pnpm.io/workspaces)
-*   **Mobile App:** [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
-    *   **Routing:** Expo Router
-    *   **UI:** Native components, potentially with a simple component library.
-*   **Backend:** [NestJS](https://nestjs.com/) (Node.js framework)
-*   **Database:** [PostgreSQL](https://www.postgresql.org/)
-*   **ORM:** [Prisma](https://www.prisma.io/)
-*   **Authentication:** JWT with [Passport.js](http://www.passportjs.org/)
-*   **Containerization:** [Docker](https://www.docker.com/)
-
----
-
-## 🛠️ Getting Started
+Follow these steps to get the Resumate AI project up and running on your local machine.
 
 ### Prerequisites
 
-*   [Node.js](https://nodejs.org/en/) (v18 or later)
-*   [pnpm](https://pnpm.io/installation)
-*   [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose
-*   [Expo Go](https://expo.dev/go) app on your mobile device (iOS or Android) or a simulator.
+*   Node.js (LTS version, e.g., 18.x or 20.x)
+*   Yarn (v1.x or v3+ Berry with `nodeLinker: pnp` or `nodeLinker: node-modules` configured in `.yarnrc.yml`)
+*   Docker & Docker Compose
+*   Git
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/campus-gigs.git
-cd campus-gigs
+git clone https://github.com/your-username/resumate-ai.git
+cd resumate-ai
 ```
 
-### 2. Install Dependencies
+### 2. Configure Environment Variables
 
-Install all dependencies for all workspaces from the root directory.
-
-```bash
-pnpm install
-```
-
-### 3. Setup Environment Variables
-
-The backend server and database require environment variables to run.
-
-First, create a `.env` file in the root of the project by copying the example:
+Create a `.env` file in the root directory of the project based on the `.env.example` file.
 
 ```bash
 cp .env.example .env
 ```
 
-Now, open `.env` and fill in the required values. The default values are configured to work with the `docker-compose.yml` setup. You should set a secure `JWT_SECRET`.
+Edit the `.env` file and fill in the necessary values. For local development, you might use:
 
-### 4. Start the Development Environment
+```env
+# Database Configuration (for local Docker PostgreSQL)
+DATABASE_URL="postgresql://user:password@localhost:5432/resumate_db"
 
-This command will use Docker Compose to spin up the PostgreSQL database and the NestJS backend server with hot-reloading.
+# AWS S3 Configuration (for local MinIO or actual S3)
+AWS_ACCESS_KEY_ID="your_aws_access_key_id"
+AWS_SECRET_ACCESS_KEY="your_aws_secret_access_key"
+AWS_REGION="your_aws_region"
+AWS_S3_BUCKET_NAME="resumate-pdfs-bucket"
+AWS_S3_ENDPOINT="http://localhost:9000" # For MinIO local S3 emulation
 
-```bash
-docker-compose up --build
+# JWT Secret (for backend authentication)
+JWT_SECRET="supersecretjwtkey"
+
+# Frontend Configuration (for Next.js)
+NEXT_PUBLIC_API_URL="http://localhost:3001/api" # Backend API URL
+NEXT_PUBLIC_APP_URL="http://localhost:3000" # Frontend URL
 ```
 
-You can verify the server is running by navigating to `http://localhost:3001` in your browser. You should see "Hello World!".
+### 3. Start Local Database and Services with Docker Compose
 
-### 5. Run the Mobile App
-
-In a separate terminal, navigate to the mobile app directory and start the Expo development server.
+Navigate to the root of the project and start the Docker Compose services. This will spin up a PostgreSQL database and potentially a MinIO server for local S3 emulation.
 
 ```bash
-cd apps/mobile
-pnpm start
+docker-compose up -d
 ```
 
-This will open a Metro Bundler interface in your terminal. You can now:
-*   Scan the QR code with the Expo Go app on your phone.
-*   Press `i` to run on an iOS Simulator.
-*   Press `a` to run on an Android Emulator.
+### 4. Install Dependencies
 
-The mobile app is configured to connect to the backend server running on `localhost:3001`.
+Install root dependencies and then dependencies for all workspaces using Yarn.
+
+```bash
+yarn install
+```
+
+### 5. Setup Database Schema and Seed Data
+
+Apply Prisma migrations to create the database schema.
+
+```bash
+yarn workspace @resumate-ai/db prisma migrate dev --name init # Or use `prisma db push` for quick dev sync
+yarn workspace @resumate-ai/db prisma generate # Generate Prisma client
+# Optional: Seed initial data (e.g., default templates)
+# yarn workspace @resumate-ai/api db:seed
+```
+
+### 6. Run the Backend (API)
+
+Navigate to the `apps/api` directory or use `yarn workspace` command.
+
+```bash
+yarn workspace @resumate-ai/api start:dev # Runs NestJS backend in watch mode
+```
+
+The backend API will typically run on `http://localhost:3001`.
+
+### 7. Run the Frontend (Web)
+
+Navigate to the `apps/web` directory or use `yarn workspace` command.
+
+```bash
+yarn workspace @resumate-ai/web dev # Runs Next.js frontend in development mode
+```
+
+The frontend application will typically run on `http://localhost:3000`.
+
+### 8. Access the Application
+
+Open your web browser and navigate to `http://localhost:3000`. You should now be able to register an account, browse templates, and create resumes.
+
+---
+
+**Note on Production Deployment:**
+Production deployment will utilize the Dockerfiles within `apps/api` and `apps/web`, deployed to AWS ECS Fargate, with infrastructure managed by Terraform within the `infra/aws` directory. CI/CD pipelines are defined in `.github/workflows` to automate this process.
 ```

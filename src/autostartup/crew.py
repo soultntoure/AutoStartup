@@ -24,7 +24,6 @@ class Autostartup():
     tasks_config = 'config/tasks.yaml'
 
     search_tool = SerperDevTool()
-    # The OrchestratorTools() instantiation is no longer needed
 
     @agent
     def orchestrator(self) -> Agent:
@@ -41,9 +40,9 @@ class Autostartup():
         )
 
     @agent
-    def market_analyst(self) -> Agent:
+    def market_researcher(self) -> Agent:
         return Agent(
-            config=self.agents_config['market_analyst'],
+            config=self.agents_config['market_researcher'],
             tools=[self.search_tool],
             verbose=True
         )
@@ -52,9 +51,16 @@ class Autostartup():
     def mvp_architect(self) -> Agent:
         return Agent(
             config=self.agents_config['mvp_architect'],
-            tools=[GitHubScaffolderTool()],
             verbose=True
         )
+        
+    @agent
+    def github_builder(self) -> Agent:
+        return Agent(
+            config=self.agents_config['github_builder'],
+            tools=[GitHubScaffolderTool()],
+            verbose=True
+        )    
 
     @task
     def classify_idea_task(self) -> Task:

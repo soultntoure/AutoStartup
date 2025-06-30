@@ -1,1 +1,1 @@
-{"classification":"software","reason":"The idea explicitly describes a 'mobile app', which is a code-based product and therefore falls under the software category."}
+{"classification":"software","reason":"The idea describes building an online platform for resume creation, which is a web application or SaaS product, falling under the 'software' category."}
