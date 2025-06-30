@@ -53,8 +53,7 @@ technical_planning_and_scaffolding_task:
 
 scaffold_github_repo_task:
   description: >
-    Execute the GitHub Repository Scaffolder tool using the JSON plan from the
-    previous task.
+    Execute the GitHub Repository Scaffolder tool using the JSON scaffolding plan from the technical_architect.
     You MUST pass this entire JSON object, unmodified, as the arguments to the tool.
   expected_output: >
     The full URL of the successfully created and populated GitHub repository.

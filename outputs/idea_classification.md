@@ -1,1 +1,0 @@
-{"classification":"software","reason":"The idea describes building an online platform for resume creation, which is a web application or SaaS product, falling under the 'software' category."}
