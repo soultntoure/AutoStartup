@@ -31,8 +31,9 @@ technical_planning_and_scaffolding_task:
   description: >
     Leverage the user-provided startup idea "{idea}" and the detailed market gap analysis from the context to 
     design a technical blueprint that directly addresses and solves the problems outlined in the gap analysis.
+
     1.  Recommend a technology stack (frontend, backend, database, etc.) that is
-      specifically chosen to build a competitive advantage based on the identified gap.
+        specifically chosen to build a competitive advantage based on the identified gap.
     2.  Design a detailed, hierarchical folder and file structure for the project.
     3.  Draft a comprehensive `README.md`. The README is critical and must explain:
       - The project's purpose.
