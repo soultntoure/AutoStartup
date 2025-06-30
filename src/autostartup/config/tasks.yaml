@@ -14,9 +14,9 @@ competitor_analysis_task:
 
 gap_finding_task:
   description: >
-    Analyze the competitor report for "{idea}" to identify a strategic gap in the market.
-    Based on the identified strengths and weaknesses of the competitors, pinpoint
-    unmet customer needs or opportunities that the new startup can exploit.
+    Based on the identified strengths and weaknesses of the competitors from the context, 
+    made for the user idea "{idea}", identify a strategic gap in the market.
+    Pinpoint unmet customer needs or opportunities that the new startup can exploit.
     Your analysis should form the core value proposition for the new startup.
   expected_output: >
     A concise report that clearly articulates the identified market gap or
@@ -53,11 +53,16 @@ technical_planning_and_scaffolding_task:
   agent: technical_architect
   context:
     - gap_finding_task
+  output_file: 'outputs/scaffolding_plan.json'
 
 scaffold_github_repo_task:
   description: >
-    Execute the GitHub Repository Scaffolder tool using the JSON scaffolding plan from the technical_architect.
-    You MUST pass this entire JSON object, unmodified, as the arguments to the tool.
+    Using the structured JSON blueprint from the context, create a fully scaffolded GitHub repository.
+    This includes:
+    - Creating the repository on GitHub.
+    - Setting up the directory structure as specified in the JSON.
+    - Populating files with their initial content.
+    - Ensuring that the README.md is well-formed and contains all necessary information.
   expected_output: >
     The full URL of the successfully created and populated GitHub repository.
   agent: github_builder
