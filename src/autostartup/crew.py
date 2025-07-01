@@ -206,7 +206,7 @@ class Autostartup():
             expected_output=self.tasks_config['scaffold_github_repo_task']['expected_output'],
             agent=gb_agent,
             dependencies=[tech_plan_task], # Explicitly define dependency
-            context={"plan_file": "outputs/scaffolding_plan.json"}, # Assuming tool needs this
+            # context={"plan_file": "outputs/scaffolding_plan.json"}, # Removed: Caused Pydantic error. Tool should get plan from task output.
             callback=lambda output: self.task_manager.update_task_progress(
                 self.job_id, "github_scaffolding", gb_agent.role, task_output=output
             ) if self.task_manager else None
