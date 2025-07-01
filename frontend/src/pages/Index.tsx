@@ -8,13 +8,28 @@ import { Separator } from "@/components/ui/separator";
 import { Lightbulb, Zap, Github, TrendingUp, Search, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface Job {
+// Corresponds to backend's TaskResult model
+interface TaskResultFrontend {
+  task_name: string;
+  agent: string;
+  status: string;
+  result?: string;
+  error?: string;
+  // We might not need date fields for this specific feature, keeping it simple
+}
+
+// This interface should align with backend's JobStatusResponse
+interface JobStatusData {
   job_id: string;
   status: string;
-  started_at: string;
-  progress: number;
   current_task?: string;
-  progress_percentage?: number;
+  current_agent?: string;
+  progress_percentage: number;
+  completed_tasks: TaskResultFrontend[];
+  total_tasks: number;
+  started_at?: string;
+  completed_at?: string;
+  error?: string;
 }
 
 interface JobResults {
@@ -29,17 +44,24 @@ const API_KEY = "92013b1783117dce8440736634d9953ad09887b6";
 const Index = () => {
   const [idea, setIdea] = useState("");
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
-  const [jobStatus, setJobStatus] = useState<Job | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobStatusData | null>(null); // Updated type
   const [jobResults, setJobResults] = useState<JobResults | null>(null);
-  const [jobHistory, setJobHistory] = useState<Record<string, Job>>({});
+  const [jobHistory, setJobHistory] = useState<Record<string, JobStatusData>>({}); // Assuming job history also uses more detailed structure
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [expandedJobs, setExpandedJobs] = useState<Record<string, boolean>>({});
   const [jobResultsCache, setJobResultsCache] = useState<Record<string, JobResults>>({});
-  const [selectedResult, setSelectedResult] = useState<{
+  const [selectedResult, setSelectedResult] = useState<{ // This is for final results view by type
     jobId: string;
     type: 'competitor_analysis' | 'gap_finding' | 'github_scaffolding';
   } | null>(null);
+
+  // New states for inline detailed task view
+  const [detailedViewTaskName, setDetailedViewTaskName] = useState<string | null>(null);
+  // activeJobOutputs will store results of completed tasks for the *currently running* job
+  const [activeJobOutputs, setActiveJobOutputs] = useState<Record<string, string | undefined>>({});
+
+
   const { toast } = useToast();
 
   const headers = {
@@ -51,7 +73,7 @@ const Index = () => {
     try {
       const response = await fetch(`${API_BASE}/api/startup/jobs`, { headers });
       const data = await response.json();
-      setJobHistory(data.jobs || {});
+      setJobHistory(data.jobs || {}); // TODO: Ensure data.jobs matches JobStatusData or adapt
     } catch (error) {
       console.error("Failed to fetch job history:", error);
     }
@@ -60,6 +82,19 @@ const Index = () => {
   useEffect(() => {
     fetchJobHistory();
   }, []);
+
+  const handleViewTaskDetail = (taskName: string) => {
+    if (jobStatus && jobStatus.completed_tasks) {
+      const outputs: Record<string, string | undefined> = {};
+      for (const task of jobStatus.completed_tasks) {
+        outputs[task.task_name] = task.result;
+      }
+      setActiveJobOutputs(outputs);
+      setDetailedViewTaskName(taskName);
+      setSelectedResult(null); // Don't show full job results view
+      setJobResults(null); // Clear any stale full job results
+    }
+  };
 
   const analyzeIdea = async () => {
     if (!idea.trim()) {
@@ -456,40 +491,78 @@ const Index = () => {
                       </div>
                     )}
 
-                    {/* Display completed tasks for in-progress job */}
-                    {jobStatus.status === "running" && jobStatus.completed_tasks && jobStatus.completed_tasks.length > 0 && (
-                      <div className="mt-3 pt-3 border-t">
-                        <h4 className="text-sm font-semibold mb-2 text-gray-800">Completed Tasks:</h4>
-                        <ul className="space-y-1">
-                          {jobStatus.completed_tasks.map((task) => (
-                            <li key={task.task_name} className="text-xs text-gray-600 flex justify-between items-center">
-                              <span>{task.task_name.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</span>
-                              <Button
-                                variant="outline"
-                                size="xs"
-                                onClick={() => {
-                                  // For now, let's alert the result. Proper display needs more UI work.
-                                  // This will be improved in subsequent steps.
-                                  const taskResultText = task.task_name === 'github_scaffolding' && task.result
-                                    ? `GitHub Repository URL: ${task.result}`
-                                    : `Result for ${task.task_name}:\n${task.result}`;
-                                  alert(taskResultText);
-                                }}
-                              >
-                                View Output
-                              </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    {/* Removed old alert-based completed tasks display from here */}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Results Display - This section is for when the entire job is complete */}
-            {/* We might need a new section or modal for viewing individual in-progress task results */}
+            {/* Section for listing completed tasks of a RUNNING job */}
+            {isAnalyzing && jobStatus && jobStatus.status === "running" && jobStatus.completed_tasks && jobStatus.completed_tasks.length > 0 && (
+              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur mt-6">
+                <CardHeader>
+                  <CardTitle className="text-lg">Completed Task Outputs</CardTitle>
+                  <p className="text-sm text-gray-600">Click on a task name to view its output below.</p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {jobStatus.completed_tasks.map((task) => (
+                      <li key={task.task_name}>
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-blue-600 hover:text-blue-800"
+                          onClick={() => handleViewTaskDetail(task.task_name)} // To be implemented next
+                        >
+                          {task.task_name.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Detailed Task Output Display Area */}
+            {isAnalyzing && detailedViewTaskName && activeJobOutputs[detailedViewTaskName] && (
+              <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm mt-6 animate-fade-in">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-xl">
+                    Output: {detailedViewTaskName.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" onClick={() => setDetailedViewTaskName(null)}>
+                    Close
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {detailedViewTaskName === 'github_scaffolding' ? (
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-700">Your project scaffolding is ready!</p>
+                      <Button
+                        asChild
+                        className="bg-gray-900 hover:bg-gray-800"
+                      >
+                        <a
+                          href={activeJobOutputs[detailedViewTaskName]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2"
+                        >
+                          <Github className="h-4 w-4" />
+                          Open Repository
+                        </a>
+                      </Button>
+                    </div>
+                  ) : (
+                    <pre className="whitespace-pre-wrap text-gray-700 leading-relaxed bg-slate-50 p-4 rounded-md max-h-96 overflow-y-auto">
+                      {activeJobOutputs[detailedViewTaskName]}
+                    </pre>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+
+            {/* FINAL Results Display - This section is for when the entire job is complete */}
             {selectedResult ? (
               renderSelectedResult()
             ) : jobResults && !selectedResult && (
