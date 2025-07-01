@@ -1,1 +1,1 @@
-https://github.com/soultntoure/fit-tribe-connect
+https://github.com/soultntoure/startup-project-starter

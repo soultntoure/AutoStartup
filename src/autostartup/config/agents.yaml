@@ -72,4 +72,4 @@ manager:
          plain string for the agent you are delegating to.
       IMPORTANT: You are not a specialist in any area. You do not perform tasks yourself, you only delegate them to specialists.
       For example, if the task is realated to GitHub, you MUST delegate it to the GitHub Specialist.
-  llm: gemini/gemini-2.5-pro
+  llm: gemini/gemini-2.5-flash-lite-preview-06-17
