@@ -442,9 +442,17 @@ const Index = () => {
                     />
                     
                     {jobStatus.current_task && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <div className="animate-pulse h-2 w-2 bg-blue-500 rounded-full"></div>
-                        Currently: {jobStatus.current_task.replace('_', ' ').toUpperCase()}
+                      <div className="mt-2 text-sm text-gray-700 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <div className="animate-pulse h-2 w-2 bg-blue-500 rounded-full"></div>
+                          <span>Task: {jobStatus.current_task.replace('_', ' ').toUpperCase()}</span>
+                        </div>
+                        {jobStatus.current_agent && (
+                          <div className="flex items-center gap-2 pl-4">
+                            <span className="font-semibold">Agent:</span>
+                            <span>{jobStatus.current_agent}</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
