@@ -455,12 +455,41 @@ const Index = () => {
                         )}
                       </div>
                     )}
+
+                    {/* Display completed tasks for in-progress job */}
+                    {jobStatus.status === "running" && jobStatus.completed_tasks && jobStatus.completed_tasks.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <h4 className="text-sm font-semibold mb-2 text-gray-800">Completed Tasks:</h4>
+                        <ul className="space-y-1">
+                          {jobStatus.completed_tasks.map((task) => (
+                            <li key={task.task_name} className="text-xs text-gray-600 flex justify-between items-center">
+                              <span>{task.task_name.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</span>
+                              <Button
+                                variant="outline"
+                                size="xs"
+                                onClick={() => {
+                                  // For now, let's alert the result. Proper display needs more UI work.
+                                  // This will be improved in subsequent steps.
+                                  const taskResultText = task.task_name === 'github_scaffolding' && task.result
+                                    ? `GitHub Repository URL: ${task.result}`
+                                    : `Result for ${task.task_name}:\n${task.result}`;
+                                  alert(taskResultText);
+                                }}
+                              >
+                                View Output
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Results Display */}
+            {/* Results Display - This section is for when the entire job is complete */}
+            {/* We might need a new section or modal for viewing individual in-progress task results */}
             {selectedResult ? (
               renderSelectedResult()
             ) : jobResults && !selectedResult && (

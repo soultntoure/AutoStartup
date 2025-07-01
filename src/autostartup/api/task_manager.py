@@ -155,11 +155,21 @@ class TaskManager:
             
             # Ensure completed_tasks are TaskResult instances for the response model
             completed_tasks_for_response: List[TaskResult] = []
-            for res in job_data.get("completed_task_results", []):
-                if isinstance(res, TaskResult):
-                    completed_tasks_for_response.append(res)
-                elif isinstance(res, dict): # Should not happen with new logic
-                    completed_tasks_for_response.append(TaskResult(**res))
+            for task_result_obj in job_data.get("completed_task_results", []):
+                if isinstance(task_result_obj, TaskResult):
+                    # Make a copy to potentially modify the result for the response
+                    response_task_result_data = task_result_obj.dict()
+
+                    if task_result_obj.task_name == "github_scaffolding" and task_result_obj.result:
+                        prefix = "✅ Successfully created and populated repository: "
+                        if task_result_obj.result.startswith(prefix):
+                            # Replace the result with the clean URL for the response
+                            response_task_result_data["result"] = task_result_obj.result[len(prefix):]
+
+                    completed_tasks_for_response.append(TaskResult(**response_task_result_data))
+                elif isinstance(task_result_obj, dict): # Fallback, should ideally be TaskResult instances
+                    completed_tasks_for_response.append(TaskResult(**task_result_obj))
+
 
             return JobStatusResponse(
                 job_id=job_data["job_id"],
