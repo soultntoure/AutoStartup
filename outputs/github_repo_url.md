@@ -1,1 +1,1 @@
-https://github.com/soultntoure/startup-project-starter
+https://github.com/soultntoure/personalized-stay-connector
