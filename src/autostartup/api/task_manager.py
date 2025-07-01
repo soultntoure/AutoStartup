@@ -191,10 +191,25 @@ class TaskManager:
             formatted_results: Dict[str, Dict[str, Any]] = {}
             for task_result_obj in job_data.get("completed_task_results", []):
                 if isinstance(task_result_obj, TaskResult):
-                    formatted_results[task_result_obj.task_name] = {
-                        "result": task_result_obj.result,
-                        # Potentially add other TaskResult fields if frontend needs them
-                    }
+                    task_name = task_result_obj.task_name
+                    task_actual_result = task_result_obj.result
+
+                    if task_name == "github_scaffolding" and task_actual_result:
+                        # Extract the URL from the success message
+                        # Expected format: "✅ Successfully created and populated repository: {URL}"
+                        prefix = "✅ Successfully created and populated repository: "
+                        if task_actual_result.startswith(prefix):
+                            url = task_actual_result[len(prefix):]
+                            formatted_results[task_name] = {"result": url}
+                        else:
+                            # If the prefix is not there, it might be an error message or different format
+                            # For now, pass it as is, or consider logging an issue
+                            formatted_results[task_name] = {"result": task_actual_result}
+                    else:
+                        formatted_results[task_name] = {
+                            "result": task_actual_result,
+                            # Potentially add other TaskResult fields if frontend needs them
+                        }
 
             return {
                 "job_id": job_id,
