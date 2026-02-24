@@ -42,7 +42,12 @@ class Autostartup():
 
     @agent
     def market_researcher(self) -> Agent:
-        return Agent(config=self.agents_config['market_researcher'],tools=[self.search_tool], verbose=True, allow_delegation=False)
+        return Agent(
+            config=self.agents_config['market_researcher'],
+            tools=[self.search_tool],
+            verbose=True,
+            allow_delegation=False
+            )
     
     @agent
     def gap_finder(self) -> Agent:

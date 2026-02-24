@@ -18,9 +18,8 @@ def run():
     Run the crew.
     """
     inputs = {
-        'idea': ' An app that helps users track their daily water intake and reminds them to stay hydrated, with features like personalized goals, reminders, and progress tracking.',
+        'idea': 'An app to assist diabetic patients by providing personalized meal plans, medication reminders, and health tracking.',
     }
-    
     try:
         result = Autostartup().crew().kickoff(inputs=inputs)
         print(f"Crew execution completed successfully at {datetime.now()}.")
