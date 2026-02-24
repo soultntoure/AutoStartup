@@ -27,7 +27,7 @@
 
 <div align="center">
   <a href="https://youtu.be/QE6VCR_Jxso">
-    <img src="https://img.youtube.com/vi/QE6VCR_Jxso/maxresdefault.jpg" alt="AutoStartup Demo Video" width="800" style="max-width: 100%;">
+    <img src="https://img.youtube.com/vi/QE6VCR_Jxso/hqdefault.jpg" alt="AutoStartup Demo Video" width="800" style="max-width: 100%;">
   </a>
   <br/>
   <em>▶ Click to watch the full demo on YouTube</em>
